@@ -63,7 +63,28 @@ public class BoardManager : MonoBehaviour {
             return;
         }
 
+        bool hasAtLeastOneMove = false;
         allowedMoves = Board[x, y].PossibleMove();
+
+        // Set hasAtLeastOneMove
+        for(int i = 0; i < BOARD_SIZE; i++)
+        {
+            for(int j = 0; j < BOARD_SIZE; j++)
+            {
+                if(allowedMoves[i,j])
+                {
+                    hasAtLeastOneMove = true;
+                    break;
+                }
+            }
+        }
+
+        // Do not select the piece if it cannot move
+        if(!hasAtLeastOneMove)
+        {
+            return;
+        }
+
         selectedPiece = Board[x, y];
         BoardHighlight.Instance.HighlightAllowedMoves(allowedMoves);
     }
@@ -74,25 +95,32 @@ public class BoardManager : MonoBehaviour {
         {
             Piece p = Board[x, y];
 
-            if(p != null && p.isAttacking != isAttackingTurn)
-            {
-
-                // Is the king?
-                if(p.GetType() == typeof(King))
-                {
-                    // End the game
-                    return;
-                }
-
-                // Capture a piece 
-                activePieces.Remove(p.gameObject);
-                Destroy(gameObject.gameObject);
-            }
-
             Board[selectedPiece.CurrentX, selectedPiece.CurrentY] = null;
             selectedPiece.transform.position = GetTileCentre(x, y);
             selectedPiece.SetPosition(x, y);
             Board[x, y] = selectedPiece;
+
+            // Check if a piece needs to be removed
+            Piece a, b;
+            p = Board[x, y];
+
+            // Check right
+            if (x < BOARD_SIZE - 2)
+            {
+                a = Board[x + 1, y];
+                b = Board[x + 2, y];
+                if(a != null && b != null)
+                {
+                    if(p.isAttacking == b.isAttacking && p.isAttacking != a.isAttacking)
+                    {
+                        // Remove the piece
+                        Board[a.CurrentX, a.CurrentY] = null;
+                        Destroy(a);
+                    }
+                }
+            }
+
+
 
             isAttackingTurn = !isAttackingTurn;
         }
@@ -204,6 +232,29 @@ public class BoardManager : MonoBehaviour {
                 Vector3.forward * (selectionY + 1) + Vector3.right * selectionX,
                 Vector3.forward * selectionY + Vector3.right * (selectionX + 1));
         }
+    }
+
+
+
+    private void EngGame()
+    {
+        if(isAttackingTurn)
+        {
+            Debug.Log("Attacking team wins!");
+        }
+        else
+        {
+            Debug.Log("Defending team wins!");
+        }
+            
+        foreach (GameObject go in activePieces)
+        {
+            Destroy(go);
+        }
+
+        isAttackingTurn = true;
+        BoardHighlight.Instance.HideHighlights();
+        SpawnAllPieces();
     }
 
 }
