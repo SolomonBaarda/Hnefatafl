@@ -130,6 +130,7 @@ GameObject:
   m_Component:
   - component: {fileID: 300505655}
   - component: {fileID: 300505654}
+  - component: {fileID: 300505656}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -152,7 +153,8 @@ MonoBehaviour:
   gamePiecePrefabs:
   - {fileID: 7636100961166422067, guid: b8b6fb2b052f8ef47bf3c4b672500049, type: 3}
   - {fileID: 1341001715091714310, guid: d6b8baadcff30724dbd616662dd66d27, type: 3}
-  - {fileID: 6721707284762782591, guid: 7a39efb83939ae14abd2e442bde44833, type: 3}
+  - {fileID: 7495002529813905058, guid: 7a39efb83939ae14abd2e442bde44833, type: 3}
+  isAttackingTurn: 1
 --- !u!4 &300505655
 Transform:
   m_ObjectHideFlags: 0
@@ -168,6 +170,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &300505656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300505653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afe92a554a6a27e41ac0d5c1567fc4ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  highlightPrefab: {fileID: 5462941529662686077, guid: 319489f1b05708f4a881f5826c004bf8,
+    type: 3}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
