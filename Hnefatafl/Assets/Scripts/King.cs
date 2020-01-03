@@ -12,6 +12,8 @@ public class King : Piece
 
         Piece p;
         
+
+
         // Check 3x3 around the king 
         for(int y = CurrentY - 1; y <= CurrentY + 1; y++)
         {        
@@ -20,14 +22,16 @@ public class King : Piece
                 // Ensure within the board
                 if(x >= 0 && x <= BoardManager.BOARD_SIZE && y >= 0 && y <= BoardManager.BOARD_SIZE)
                 {
-                    // Get the tile
-                    p = BoardManager.Instance.Board[x, y];
-                    // Valid move
-                    if(p == null)
+                    if (x == CurrentX || y == CurrentY)
                     {
-                        r[x, y] = true;
+                        // Get the tile
+                        p = BoardManager.Instance.Board[x, y];
+                        // Valid move
+                        if (p == null)
+                        {
+                            r[x, y] = true;
+                        }
                     }
-                    
                 }
             }
         }

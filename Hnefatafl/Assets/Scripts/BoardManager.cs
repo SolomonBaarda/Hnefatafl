@@ -101,32 +101,119 @@ public class BoardManager : MonoBehaviour {
             Board[x, y] = selectedPiece;
 
             // Check if a piece needs to be removed
-            Piece a, b;
-            p = Board[x, y];
-
-            // Check right
-            if (x < BOARD_SIZE - 2)
-            {
-                a = Board[x + 1, y];
-                b = Board[x + 2, y];
-                if(a != null && b != null)
-                {
-                    if(p.isAttacking == b.isAttacking && p.isAttacking != a.isAttacking)
-                    {
-                        // Remove the piece
-                        Board[a.CurrentX, a.CurrentY] = null;
-                        Destroy(a);
-                    }
-                }
-            }
-
-
+            UpdateBoard();
 
             isAttackingTurn = !isAttackingTurn;
         }
 
         BoardHighlight.Instance.HideHighlights();
         selectedPiece = null;
+    }
+
+    private void UpdateBoard()
+    {
+        Piece king = null;
+        for(int i = 0; i < BOARD_SIZE; i++)
+        {
+            for(int j = 0; j < BOARD_SIZE; j ++)
+            {
+                if(Board[i,j] != null)
+                {
+                    if(Board[i,j].isKing)
+                    {
+                        king = Board[i, j];
+                        break;
+                    }
+                }
+            }
+        }
+
+        Piece a, b, c;
+        // Check the horizontal lines
+        for(int y = 0; y < BOARD_SIZE; y++)
+        {
+            for(int x = 0; x < BOARD_SIZE; x++)
+            {
+                if(x > 0 && x < BOARD_SIZE - 3 && y > 0 && y < BOARD_SIZE - 3)
+                {
+                    a = Board[x, y];
+                    b = Board[x + 1, y];
+                    c = Board[x + 2, y];
+
+                    if(a != null && b != null && c != null)
+                    {
+                        // Check if middle is different to the outside ones
+                        if(a.isAttacking == c.isAttacking && a.isAttacking != b.isAttacking)
+                        {
+                            // Delete piece 
+                            print("piece " + b + " needs to be deleted");
+
+                            Board[b.CurrentX, b.CurrentY] = null;
+                            activePieces.Remove(b.gameObject);
+                            Destroy(b);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check the vertical lines
+        /*
+        for (int x = 0; x < BOARD_SIZE; x++)
+        {
+            for (int y = 0; y < BOARD_SIZE; y++)
+            {
+                if (x > 0 && x < BOARD_SIZE - 3 && y > 0 && y < BOARD_SIZE - 3)
+                {
+                    a = Board[x, y];
+                    b = Board[x, y + 1];
+                    c = Board[x, y + 2];
+
+                    if (a != null && b != null && c != null)
+                    {
+                        // Check if middle is different to the outside ones
+                        if (a.isAttacking == c.isAttacking && a.isAttacking != b.isAttacking)
+                        {
+                            Board[b.CurrentX, b.CurrentY] = null;
+                            Destroy(b);
+                        }
+                    }
+                }
+            }
+        }
+        */
+
+        // Check if the king has reached the corner
+        if(king.CurrentX == 0 || king.CurrentX == BOARD_SIZE - 1)
+        {
+            if(king.CurrentY == 0 || king.CurrentY == BOARD_SIZE - 1)
+            {
+                // King has reached the corner
+                // Attacking wins
+                EndGame(true);
+            }
+        }
+
+        // Check if the king is surrounded on all four sides (can't move)
+        if(king.CurrentX > 0 && king.CurrentX < BOARD_SIZE && king.CurrentY > 0 && king.CurrentY < BOARD_SIZE)
+        {
+            a = Board[king.CurrentX - 1, king.CurrentY];
+            b = Board[king.CurrentX + 1, king.CurrentY];
+            c = Board[king.CurrentX, king.CurrentY - 1];
+            Piece d = Board[king.CurrentX, king.CurrentY + 1];
+
+            if(a != null && b != null && c != null && d != null)
+            {
+                if(!a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
+                {
+                    // Surrounded on all sides
+                    // Defending wins 
+                    EndGame(false);
+                }
+            }
+        }
+
+
     }
 
     private void SpawnAllPieces()
@@ -140,15 +227,22 @@ public class BoardManager : MonoBehaviour {
         SpawnPiece(0, 0, 3);
         SpawnPiece(0, 0, 4);
         SpawnPiece(0, 0, 5);
+        SpawnPiece(0, 1, 4);
+
         SpawnPiece(0, 3, 0);
         SpawnPiece(0, 4, 0);
         SpawnPiece(0, 5, 0);
+        SpawnPiece(0, 4, 1);
+
         SpawnPiece(0, 3, 8);
         SpawnPiece(0, 4, 8);
         SpawnPiece(0, 5, 8);
+        SpawnPiece(0, 4, 7);
+
         SpawnPiece(0, 8, 3); 
         SpawnPiece(0, 8, 4);
         SpawnPiece(0, 8, 5);
+        SpawnPiece(0, 7, 4);
 
         // Spawn the white pieces
         SpawnPiece(1, 3, 3);
@@ -236,9 +330,9 @@ public class BoardManager : MonoBehaviour {
 
 
 
-    private void EngGame()
+    private void EndGame(bool attackingTeamWon)
     {
-        if(isAttackingTurn)
+        if(attackingTeamWon)
         {
             Debug.Log("Attacking team wins!");
         }
