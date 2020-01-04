@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoardManager : MonoBehaviour {
+public class BoardManager : MonoBehaviour
+{
 
     public static BoardManager Instance { set; get; }
     private bool[,] allowedMoves { set; get; }
@@ -28,16 +29,17 @@ public class BoardManager : MonoBehaviour {
         SpawnAllPieces();
     }
 
-    private void Update () {
+    private void Update()
+    {
         UpdateTileSelection();
-        DrawBoard ();
+        DrawBoard();
 
         // Left click
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
-            if(selectionX >= 0 && selectionY >= 0)
+            if (selectionX >= 0 && selectionY >= 0)
             {
-                if(selectedPiece == null)
+                if (selectedPiece == null)
                 {
                     // Select the new piece
                     SelectPiece(selectionX, selectionY);
@@ -54,11 +56,11 @@ public class BoardManager : MonoBehaviour {
     private void SelectPiece(int x, int y)
     {
         // Not a valid selection 
-        if(Board[x,y] == null)
+        if (Board[x, y] == null)
         {
             return;
         }
-        if(Board[x,y].isAttacking != isAttackingTurn)
+        if (Board[x, y].isAttacking != isAttackingTurn)
         {
             return;
         }
@@ -67,11 +69,11 @@ public class BoardManager : MonoBehaviour {
         allowedMoves = Board[x, y].PossibleMove();
 
         // Set hasAtLeastOneMove
-        for(int i = 0; i < BOARD_SIZE; i++)
+        for (int i = 0; i < BOARD_SIZE; i++)
         {
-            for(int j = 0; j < BOARD_SIZE; j++)
+            for (int j = 0; j < BOARD_SIZE; j++)
             {
-                if(allowedMoves[i,j])
+                if (allowedMoves[i, j])
                 {
                     hasAtLeastOneMove = true;
                     break;
@@ -80,7 +82,7 @@ public class BoardManager : MonoBehaviour {
         }
 
         // Do not select the piece if it cannot move
-        if(!hasAtLeastOneMove)
+        if (!hasAtLeastOneMove)
         {
             return;
         }
@@ -91,7 +93,7 @@ public class BoardManager : MonoBehaviour {
 
     private void MovePiece(int x, int y)
     {
-        if(allowedMoves[x,y])
+        if (allowedMoves[x, y])
         {
             Piece p = Board[x, y];
 
@@ -112,81 +114,114 @@ public class BoardManager : MonoBehaviour {
 
     private void UpdateBoard()
     {
-        Piece king = null;
-        for(int i = 0; i < BOARD_SIZE; i++)
+        Piece a, b, c, d, e;
+        int attackingCount = 0, defendingCount = 0;
+
+        // Loop through the board
+        for (int y = 0; y < BOARD_SIZE; y++)
         {
-            for(int j = 0; j < BOARD_SIZE; j ++)
+            for (int x = 0; x < BOARD_SIZE; x++)
             {
-                if(Board[i,j] != null)
+                // Count the number of active tiles
+                if (Board[x, y] != null)
                 {
-                    if(Board[i,j].isKing)
+                    if (Board[x, y].isAttacking)
                     {
-                        king = Board[i, j];
-                        break;
+                        attackingCount++;
+                    }
+                    else
+                    {
+                        defendingCount++;
                     }
                 }
-            }
-        }
 
-        Piece a, b, c;
-        // Check the horizontal lines
-        for(int y = 0; y < BOARD_SIZE; y++)
-        {
-            for(int x = 0; x < BOARD_SIZE; x++)
-            {
-                if(x > 0 && x < BOARD_SIZE - 3 && y > 0 && y < BOARD_SIZE - 3)
+                // Check the 3x3
+                if (y > 0 && x > 0 && y < BOARD_SIZE - 1 && x < BOARD_SIZE - 1)
                 {
-                    a = Board[x, y];
+                    a = Board[x - 1, y];
                     b = Board[x + 1, y];
-                    c = Board[x + 2, y];
+                    c = Board[x, y - 1];
+                    d = Board[x, y + 1];
 
-                    if(a != null && b != null && c != null)
+                    e = Board[x, y];
+
+                    // Check if the king is surrounded on all four sides (can't move)
+                    if (a != null && b != null && c != null && d != null && e != null)
+                    {
+                        if (e.isKing && !a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
+                        {
+                            // Surrounded on all sides
+                            // Defending wins 
+                            EndGame(false);
+                        }
+                    }
+
+                    // Check horizontal
+                    if (a != null && b != null && e != null)
                     {
                         // Check if middle is different to the outside ones
-                        if(a.isAttacking == c.isAttacking && a.isAttacking != b.isAttacking)
+                        if (e.isAttacking != a.isAttacking && a.isAttacking == b.isAttacking)
                         {
-                            // Delete piece 
-                            print("piece " + b + " needs to be deleted");
+                            if (!e.isKing)
+                            {
+                                // Delete piece 
+                                Kill(e.CurrentX, e.CurrentY);
+                            }
+                        }
+                    }
 
-                            Board[b.CurrentX, b.CurrentY] = null;
-                            activePieces.Remove(b.gameObject);
-                            Destroy(b);
+                    // Check vertical
+                    if (c != null && d != null && e != null)
+                    {
+                        // Check if middle is different to the outside ones
+                        if (e.isAttacking != c.isAttacking && c.isAttacking == d.isAttacking)
+                        {
+                            if (!e.isKing)
+                            {
+                                // Delete piece 
+                                Kill(e.CurrentX, e.CurrentY);
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Check the vertical lines
-        /*
-        for (int x = 0; x < BOARD_SIZE; x++)
+        a = Board[0, 0];
+        b = Board[0, BOARD_SIZE - 1];
+        c = Board[BOARD_SIZE - 1, 0];
+        d = Board[BOARD_SIZE - 1, BOARD_SIZE - 1];
+
+        if (a != null)
         {
-            for (int y = 0; y < BOARD_SIZE; y++)
+            if (a.isKing)
             {
-                if (x > 0 && x < BOARD_SIZE - 3 && y > 0 && y < BOARD_SIZE - 3)
-                {
-                    a = Board[x, y];
-                    b = Board[x, y + 1];
-                    c = Board[x, y + 2];
-
-                    if (a != null && b != null && c != null)
-                    {
-                        // Check if middle is different to the outside ones
-                        if (a.isAttacking == c.isAttacking && a.isAttacking != b.isAttacking)
-                        {
-                            Board[b.CurrentX, b.CurrentY] = null;
-                            Destroy(b);
-                        }
-                    }
-                }
+                // King has reached the corner
+                // Attacking wins
+                EndGame(true);
             }
         }
-        */
-
-        // Check if the king has reached the corner
-        if(king.CurrentX == 0 || king.CurrentX == BOARD_SIZE - 1)
+        if (b != null)
         {
-            if(king.CurrentY == 0 || king.CurrentY == BOARD_SIZE - 1)
+            if (b.isKing)
+            {
+                // King has reached the corner
+                // Attacking wins
+                EndGame(true);
+            }
+        }
+        if (c != null)
+        {
+            if (c.isKing)
+            {
+                // King has reached the corner
+                // Attacking wins
+                EndGame(true);
+            }
+        }
+        if (d != null)
+        {
+            if (d.isKing)
             {
                 // King has reached the corner
                 // Attacking wins
@@ -194,25 +229,25 @@ public class BoardManager : MonoBehaviour {
             }
         }
 
-        // Check if the king is surrounded on all four sides (can't move)
-        if(king.CurrentX > 0 && king.CurrentX < BOARD_SIZE && king.CurrentY > 0 && king.CurrentY < BOARD_SIZE)
+        if (attackingCount < 2)
         {
-            a = Board[king.CurrentX - 1, king.CurrentY];
-            b = Board[king.CurrentX + 1, king.CurrentY];
-            c = Board[king.CurrentX, king.CurrentY - 1];
-            Piece d = Board[king.CurrentX, king.CurrentY + 1];
-
-            if(a != null && b != null && c != null && d != null)
-            {
-                if(!a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
-                {
-                    // Surrounded on all sides
-                    // Defending wins 
-                    EndGame(false);
-                }
-            }
+            // Defending wins
+            EndGame(false);
+        }
+        if (defendingCount < 2)
+        {
+            // Attacking wins
+            EndGame(true);
         }
 
+    }
+
+    private void Kill(int x, int y)
+    {
+        Piece a = Board[x, y];
+        Board[x, y] = null;
+        activePieces.Remove(a.gameObject);
+        Destroy(a.gameObject);
 
     }
 
@@ -239,7 +274,7 @@ public class BoardManager : MonoBehaviour {
         SpawnPiece(0, 5, 8);
         SpawnPiece(0, 4, 7);
 
-        SpawnPiece(0, 8, 3); 
+        SpawnPiece(0, 8, 3);
         SpawnPiece(0, 8, 4);
         SpawnPiece(0, 8, 5);
         SpawnPiece(0, 7, 4);
@@ -260,7 +295,7 @@ public class BoardManager : MonoBehaviour {
 
     private void SpawnPiece(int index, int x, int y)
     {
-        GameObject go = Instantiate(gamePiecePrefabs[index], GetTileCentre(x,y), Quaternion.identity) as GameObject;
+        GameObject go = Instantiate(gamePiecePrefabs[index], GetTileCentre(x, y), Quaternion.identity) as GameObject;
         go.transform.SetParent(transform);
 
         Board[x, y] = go.GetComponent<Piece>();
@@ -279,16 +314,19 @@ public class BoardManager : MonoBehaviour {
     }
 
 
-    private void UpdateTileSelection() {
-        if(Camera.main) {
+    private void UpdateTileSelection()
+    {
+        if (Camera.main)
+        {
 
             RaycastHit hit;
             // Raycast from mouse point to the plane
-            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25.0f, LayerMask.GetMask("BoardPlane"))) {
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25.0f, LayerMask.GetMask("BoardPlane")))
+            {
 
                 // Get the x and y tile position
-                selectionX = (int) hit.point.x;
-                selectionY = (int) hit.point.z;
+                selectionX = (int)hit.point.x;
+                selectionY = (int)hit.point.z;
             }
             else
             {
@@ -300,24 +338,27 @@ public class BoardManager : MonoBehaviour {
     }
 
 
-    private void DrawBoard () {
+    private void DrawBoard()
+    {
         // Lines for board size
         Vector3 widthLine = Vector3.right * BOARD_SIZE;
         Vector3 heightLine = Vector3.forward * BOARD_SIZE;
 
         // Draw board
-        for (int i = 0; i <= BOARD_SIZE; i++) {
+        for (int i = 0; i <= BOARD_SIZE; i++)
+        {
             Vector3 start = Vector3.forward * i;
-            Debug.DrawLine (start, start + widthLine);
+            Debug.DrawLine(start, start + widthLine);
 
-            for (int j = 0; j <= BOARD_SIZE; j++) {
+            for (int j = 0; j <= BOARD_SIZE; j++)
+            {
                 start = Vector3.right * j;
-                Debug.DrawLine (start, start + heightLine);
+                Debug.DrawLine(start, start + heightLine);
             }
         }
 
         // Draw selection
-        if(selectionX >= 0 && selectionY >= 0)
+        if (selectionX >= 0 && selectionY >= 0)
         {
             Debug.DrawLine(
                 Vector3.forward * selectionY + Vector3.right * selectionX,
@@ -332,7 +373,7 @@ public class BoardManager : MonoBehaviour {
 
     private void EndGame(bool attackingTeamWon)
     {
-        if(attackingTeamWon)
+        if (attackingTeamWon)
         {
             Debug.Log("Attacking team wins!");
         }
@@ -340,7 +381,7 @@ public class BoardManager : MonoBehaviour {
         {
             Debug.Log("Defending team wins!");
         }
-            
+
         foreach (GameObject go in activePieces)
         {
             Destroy(go);

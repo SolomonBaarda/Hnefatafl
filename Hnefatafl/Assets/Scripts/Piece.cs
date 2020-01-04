@@ -30,11 +30,11 @@ public class Piece : MonoBehaviour
 
         // Right
         i = CurrentX;
-        while(true)
+        while (true)
         {
             i++;
             // Break out if not valid values
-            if(i < 0 || i >= BoardManager.BOARD_SIZE)
+            if (i < 0 || i >= BoardManager.BOARD_SIZE)
             {
                 break;
             }
@@ -45,14 +45,14 @@ public class Piece : MonoBehaviour
             if (p == null)
             {
                 // Only check if not on the border
-                if(CurrentY > 0 && CurrentY < BoardManager.BOARD_SIZE - 1)
-                {                
+                if (CurrentY > 0 && CurrentY < BoardManager.BOARD_SIZE - 1)
+                {
                     // Get reference to tiles
                     a = BoardManager.Instance.Board[i, CurrentY - 1];
                     b = BoardManager.Instance.Board[i, CurrentY + 1];
-                    if(a != null && b != null)
+                    if (a != null && b != null)
                     {
-                        if(isAttacking != a.isAttacking && isAttacking != b.isAttacking)
+                        if (isAttacking != a.isAttacking && isAttacking != b.isAttacking)
                         {
                             // Not valid
                             r[i, CurrentY] = false;
@@ -198,9 +198,9 @@ public class Piece : MonoBehaviour
 
         // Pieces not allowed to move to the far corners ever
         r[0, 0] = false;
-        r[0, BoardManager.BOARD_SIZE-1] = false;
-        r[BoardManager.BOARD_SIZE-1, 0] = false;
-        r[BoardManager.BOARD_SIZE-1, BoardManager.BOARD_SIZE-1] = false;
+        r[0, BoardManager.BOARD_SIZE - 1] = false;
+        r[BoardManager.BOARD_SIZE - 1, 0] = false;
+        r[BoardManager.BOARD_SIZE - 1, BoardManager.BOARD_SIZE - 1] = false;
 
         return r;
     }
