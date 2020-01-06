@@ -13,14 +13,15 @@ public class BoardManager : MonoBehaviour
 
     private const float TILE_SIZE = 1.0f;
     private const float TILE_OFFSET = 0.5f;
-    public const int BOARD_SIZE = 9;
+
+    public const int BOARD_SIZE = 11;
 
     private int selectionX = -1;
     private int selectionY = -1;
 
     public List<GameObject> gamePiecePrefabs;
     private List<GameObject> activePieces;
-    public GameObject tilePrefab;
+    public List<GameObject> gameTilePrefabs;
 
     public bool isAttackingTurn;
 
@@ -29,7 +30,9 @@ public class BoardManager : MonoBehaviour
         isAttackingTurn = true;
 
         Instance = this;
+
         CreateBoard();
+        SetBoardPlane();
         SpawnAllPieces();
     }
 
@@ -256,15 +259,36 @@ public class BoardManager : MonoBehaviour
 
     }
 
-
+    private void SetBoardPlane()
+    {
+        GameObject plane = GameObject.Find("BoardPlane");
+        // Set the scale to fit the current board size
+        plane.transform.localScale = new Vector3(BOARD_SIZE * 0.1f, 1, BOARD_SIZE * 0.1f);
+        // Move the plane so that it is in the centre of the board
+        plane.transform.position = new Vector3((float)(BOARD_SIZE) / 2, 0, (float)(BOARD_SIZE) / 2);
+    }
 
     private void CreateBoard()
     {
+        // Index 0: regular tile, 1: corners
+        GameObject type;
+
         for (int y = 0; y < BOARD_SIZE; y++)
         {
             for (int x = 0; x < BOARD_SIZE; x++)
             {
-                GameObject go = Instantiate(tilePrefab, new Vector3(x, -0.06f, y), Quaternion.identity) as GameObject;
+                // Set corners to different visual
+                if ((x == 0 || x == BOARD_SIZE - 1) && (y == 0 || y == BOARD_SIZE - 1))
+                {
+                    type = gameTilePrefabs[1];
+                }
+                else
+                {
+                    type = gameTilePrefabs[0];
+                }
+
+                // Create the tile
+                GameObject go = Instantiate(type, new Vector3(x, -0.06f, y), Quaternion.identity) as GameObject;
                 go.transform.SetParent(transform.Find("BoardVisual"));
             }
         }
@@ -275,43 +299,70 @@ public class BoardManager : MonoBehaviour
     private void SpawnAllPieces()
     {
         // Index 0: defending, 1: attacking, 2: king
-        activePieces = new List<GameObject>(); activePieces = new List<GameObject>();
+        activePieces = new List<GameObject>();
 
         Board = new Piece[BOARD_SIZE, BOARD_SIZE];
 
         // Spawn the black pieces
-        SpawnPiece(0, 0, 3);
-        SpawnPiece(0, 0, 4);
-        SpawnPiece(0, 0, 5);
-        SpawnPiece(0, 1, 4);
+        SpawnPiece(0, 0, (BOARD_SIZE / 2) - 1);
+        SpawnPiece(0, 0, BOARD_SIZE / 2);
+        SpawnPiece(0, 0, (BOARD_SIZE / 2) + 1);
+        SpawnPiece(0, 1, BOARD_SIZE / 2);
 
-        SpawnPiece(0, 3, 0);
-        SpawnPiece(0, 4, 0);
-        SpawnPiece(0, 5, 0);
-        SpawnPiece(0, 4, 1);
+        SpawnPiece(0, (BOARD_SIZE / 2) - 1, 0);
+        SpawnPiece(0, BOARD_SIZE / 2, 0);
+        SpawnPiece(0, (BOARD_SIZE / 2) + 1, 0);
+        SpawnPiece(0, BOARD_SIZE / 2, 1);
 
-        SpawnPiece(0, 3, 8);
-        SpawnPiece(0, 4, 8);
-        SpawnPiece(0, 5, 8);
-        SpawnPiece(0, 4, 7);
+        SpawnPiece(0, (BOARD_SIZE / 2) - 1, BOARD_SIZE - 1);
+        SpawnPiece(0, BOARD_SIZE / 2, BOARD_SIZE - 1);
+        SpawnPiece(0, (BOARD_SIZE / 2) + 1, BOARD_SIZE - 1);
+        SpawnPiece(0, BOARD_SIZE / 2, BOARD_SIZE - 2);
 
-        SpawnPiece(0, 8, 3);
-        SpawnPiece(0, 8, 4);
-        SpawnPiece(0, 8, 5);
-        SpawnPiece(0, 7, 4);
+        SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 1);
+        SpawnPiece(0, BOARD_SIZE - 1, BOARD_SIZE / 2);
+        SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 1);
+        SpawnPiece(0, BOARD_SIZE - 2, BOARD_SIZE / 2);
+
+        if (BOARD_SIZE >= 11)
+        {
+            SpawnPiece(0, 0, (BOARD_SIZE / 2) - 2);
+            SpawnPiece(0, 0, (BOARD_SIZE / 2) + 2);
+
+            SpawnPiece(0, (BOARD_SIZE / 2) - 2, 0);
+            SpawnPiece(0, (BOARD_SIZE / 2) + 2, 0);
+
+            SpawnPiece(0, (BOARD_SIZE / 2) - 2, BOARD_SIZE - 1);
+            SpawnPiece(0, (BOARD_SIZE / 2) + 2, BOARD_SIZE - 1);
+
+            SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 2);
+            SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 2);
+        }
 
         // Spawn the white pieces
-        SpawnPiece(1, 3, 3);
-        SpawnPiece(1, 3, 4);
-        SpawnPiece(1, 3, 5);
-        SpawnPiece(1, 4, 3);
-        SpawnPiece(1, 4, 5);
-        SpawnPiece(1, 5, 3);
-        SpawnPiece(1, 5, 4);
-        SpawnPiece(1, 5, 5);
+        SpawnPiece(1, (BOARD_SIZE / 2) - 2, BOARD_SIZE / 2);
+        SpawnPiece(1, (BOARD_SIZE / 2) - 1, BOARD_SIZE / 2);
+
+        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 2);
+        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 1);
+
+        SpawnPiece(1, (BOARD_SIZE / 2) + 2, BOARD_SIZE / 2);
+        SpawnPiece(1, (BOARD_SIZE / 2) + 1, BOARD_SIZE / 2);
+
+        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 2);
+        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 1);
+
+        if (BOARD_SIZE >= 11)
+        {
+            // Add in the corners 
+            SpawnPiece(1, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
+            SpawnPiece(1, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) - 1);
+            SpawnPiece(1, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) + 1);
+            SpawnPiece(1, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) + 1);
+        }
 
         // Spawn the king 
-        SpawnPiece(2, 4, 4);
+        SpawnPiece(2, BOARD_SIZE / 2, BOARD_SIZE / 2);
     }
 
     private void SpawnPiece(int index, int x, int y)

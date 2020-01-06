@@ -154,8 +154,9 @@ MonoBehaviour:
   - {fileID: 7636100961166422067, guid: b8b6fb2b052f8ef47bf3c4b672500049, type: 3}
   - {fileID: 1341001715091714310, guid: d6b8baadcff30724dbd616662dd66d27, type: 3}
   - {fileID: 7495002529813905058, guid: 7a39efb83939ae14abd2e442bde44833, type: 3}
-  tilePrefab: {fileID: 7361385657526672423, guid: 9f062403faeb37a4daf8d3faf51834f3,
-    type: 3}
+  gameTilePrefabs:
+  - {fileID: 7361385657526672423, guid: 9f062403faeb37a4daf8d3faf51834f3, type: 3}
+  - {fileID: 7361385657526672423, guid: 70812601d5aeaf449bfc6664c0efbc60, type: 3}
   isAttackingTurn: 1
 --- !u!4 &300505655
 Transform:
@@ -483,7 +484,7 @@ Transform:
   m_GameObject: {fileID: 1720721676}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.5, y: 0, z: 4.5}
-  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
+  m_LocalScale: {x: 0.9, y: 1, z: 0.9}
   m_Children: []
   m_Father: {fileID: 300505655}
   m_RootOrder: 0
