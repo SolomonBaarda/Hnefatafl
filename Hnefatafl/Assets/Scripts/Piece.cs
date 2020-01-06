@@ -28,6 +28,16 @@ public class Piece : MonoBehaviour
         Piece p, a, b;
         int i;
 
+
+
+
+        // TODO 
+        // Don't allow the piece to move to the edge of the board if it will be destroyed
+        // Same case as if between two players 
+
+
+
+
         // Right
         i = CurrentX;
         while (true)

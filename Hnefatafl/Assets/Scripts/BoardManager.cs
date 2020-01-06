@@ -143,55 +143,118 @@ public class BoardManager : MonoBehaviour
                     }
                 }
 
-                // Check the 3x3
-                if (y > 0 && x > 0 && y < BOARD_SIZE - 1 && x < BOARD_SIZE - 1)
+                // Pointer to current tile
+                e = Board[x, y];
+
+                // Only bother to check if the cell contains a piece 
+                if (e != null)
                 {
-                    a = Board[x - 1, y];
-                    b = Board[x + 1, y];
-                    c = Board[x, y - 1];
-                    d = Board[x, y + 1];
-
-                    e = Board[x, y];
-
-                    // Check if the king is surrounded on all four sides (can't move)
-                    if (a != null && b != null && c != null && d != null && e != null)
+                    // Check the 3x3
+                    if (y > 0 && x > 0 && y < BOARD_SIZE - 1 && x < BOARD_SIZE - 1)
                     {
-                        if (e.isKing && !a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
-                        {
-                            // Surrounded on all sides
-                            // Defending wins 
-                            EndGame(false);
-                        }
-                    }
+                        a = Board[x - 1, y];
+                        b = Board[x + 1, y];
+                        c = Board[x, y - 1];
+                        d = Board[x, y + 1];
 
-                    // Check horizontal
-                    if (a != null && b != null && e != null)
-                    {
-                        // Check if middle is different to the outside ones
-                        if (e.isAttacking != a.isAttacking && a.isAttacking == b.isAttacking)
+                        // Check if the king is surrounded on all four sides (can't move)
+                        if (a != null && b != null && c != null && d != null && e != null)
                         {
-                            if (!e.isKing)
+                            if (e.isKing && !a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
                             {
-                                // Delete piece 
-                                Kill(e.CurrentX, e.CurrentY);
+                                // Surrounded on all sides
+                                // Defending wins 
+                                EndGame(false);
+                            }
+                        }
+
+                        // Check horizontal
+                        if (a != null && b != null && e != null)
+                        {
+                            // Check if middle is different to the outside ones
+                            if (e.isAttacking != a.isAttacking && a.isAttacking == b.isAttacking)
+                            {
+                                if (!e.isKing)
+                                {
+                                    // Delete piece 
+                                    Kill(e.CurrentX, e.CurrentY);
+                                }
+                            }
+                        }
+
+                        // Check vertical
+                        if (c != null && d != null && e != null)
+                        {
+                            // Check if middle is different to the outside ones
+                            if (e.isAttacking != c.isAttacking && c.isAttacking == d.isAttacking)
+                            {
+                                if (!e.isKing)
+                                {
+                                    // Delete piece 
+                                    Kill(e.CurrentX, e.CurrentY);
+                                }
                             }
                         }
                     }
-
-                    // Check vertical
-                    if (c != null && d != null && e != null)
+                    else
                     {
-                        // Check if middle is different to the outside ones
-                        if (e.isAttacking != c.isAttacking && c.isAttacking == d.isAttacking)
+
+                        // Piece is on the edge of the board (extra case)
+                        // Horizontal
+                        if (x == 0)
                         {
-                            if (!e.isKing)
+                            a = Board[x + 1, y];
+                            if (a != null)
                             {
-                                // Delete piece 
-                                Kill(e.CurrentX, e.CurrentY);
+                                if (e.isAttacking != a.isAttacking)
+                                {
+                                    Kill(e.CurrentX, e.CurrentY);
+                                }
+                            }
+
+                        }
+                        else if (x == BOARD_SIZE - 1)
+                        {
+                            a = Board[x - 1, y];
+                            if (a != null)
+                            {
+                                if (e.isAttacking != a.isAttacking)
+                                {
+                                    Kill(e.CurrentX, e.CurrentY);
+                                }
+                            }
+                        }
+
+                        // Vertical 
+                        if (y == 0)
+                        {
+                            a = Board[x, y + 1];
+                            if (a != null)
+                            {
+                                if (e.isAttacking != a.isAttacking)
+                                {
+                                    Kill(e.CurrentX, e.CurrentY);
+                                }
+                            }
+                        }
+                        else if (y == BOARD_SIZE - 1)
+                        {
+                            a = Board[x, y - 1];
+                            if (a != null)
+                            {
+                                if (e.isAttacking != a.isAttacking)
+                                {
+                                    Kill(e.CurrentX, e.CurrentY);
+                                }
                             }
                         }
                     }
                 }
+
+
+
+
+
             }
         }
 
@@ -294,7 +357,6 @@ public class BoardManager : MonoBehaviour
         }
 
     }
-
 
     private void SpawnAllPieces()
     {
