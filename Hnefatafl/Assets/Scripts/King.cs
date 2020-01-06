@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class King : Piece
 {
-
     public override bool[,] PossibleMove()
     {
         // Array of valid moves for the piece 

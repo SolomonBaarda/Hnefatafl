@@ -20,12 +20,16 @@ public class BoardManager : MonoBehaviour
 
     public List<GameObject> gamePiecePrefabs;
     private List<GameObject> activePieces;
+    public GameObject tilePrefab;
 
-    public bool isAttackingTurn = true;
+    public bool isAttackingTurn;
 
     private void Start()
     {
+        isAttackingTurn = true;
+
         Instance = this;
+        CreateBoard();
         SpawnAllPieces();
     }
 
@@ -88,6 +92,7 @@ public class BoardManager : MonoBehaviour
         }
 
         selectedPiece = Board[x, y];
+        BoardHighlight.Instance.HighlightSelectedTile(x, y);
         BoardHighlight.Instance.HighlightAllowedMoves(allowedMoves);
     }
 
@@ -251,6 +256,22 @@ public class BoardManager : MonoBehaviour
 
     }
 
+
+
+    private void CreateBoard()
+    {
+        for (int y = 0; y < BOARD_SIZE; y++)
+        {
+            for (int x = 0; x < BOARD_SIZE; x++)
+            {
+                GameObject go = Instantiate(tilePrefab, new Vector3(x, -0.06f, y), Quaternion.identity) as GameObject;
+                go.transform.SetParent(transform.Find("BoardVisual"));
+            }
+        }
+
+    }
+
+
     private void SpawnAllPieces()
     {
         // Index 0: defending, 1: attacking, 2: king
@@ -296,7 +317,7 @@ public class BoardManager : MonoBehaviour
     private void SpawnPiece(int index, int x, int y)
     {
         GameObject go = Instantiate(gamePiecePrefabs[index], GetTileCentre(x, y), Quaternion.identity) as GameObject;
-        go.transform.SetParent(transform);
+        go.transform.SetParent(transform.Find("GamePieces"));
 
         Board[x, y] = go.GetComponent<Piece>();
         Board[x, y].SetPosition(x, y);
@@ -318,7 +339,6 @@ public class BoardManager : MonoBehaviour
     {
         if (Camera.main)
         {
-
             RaycastHit hit;
             // Raycast from mouse point to the plane
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25.0f, LayerMask.GetMask("BoardPlane")))
@@ -344,7 +364,7 @@ public class BoardManager : MonoBehaviour
         Vector3 widthLine = Vector3.right * BOARD_SIZE;
         Vector3 heightLine = Vector3.forward * BOARD_SIZE;
 
-        // Draw board
+        // Draw board gizmos
         for (int i = 0; i <= BOARD_SIZE; i++)
         {
             Vector3 start = Vector3.forward * i;

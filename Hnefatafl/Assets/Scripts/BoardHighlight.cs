@@ -6,7 +6,8 @@ public class BoardHighlight : MonoBehaviour
 {
     public static BoardHighlight Instance { set; get; }
 
-    public GameObject highlightPrefab;
+    public GameObject highlightPossibleMovesPrefab;
+    public GameObject highlightSelectedTilePrefab;
     private List<GameObject> highlights;
 
     private void Start()
@@ -15,33 +16,52 @@ public class BoardHighlight : MonoBehaviour
         highlights = new List<GameObject>();
     }
 
-    private GameObject GetHighlightObject()
+    private GameObject GetHighlightObject(GameObject highlightPrefab)
     {
+        // Find the highlight prefab type
         GameObject go = highlights.Find(g => !g.activeSelf);
 
+        // Add it if it is not there
         if (go == null)
         {
             go = Instantiate(highlightPrefab);
+            go.transform.SetParent(transform.Find("BoardHighlights"));
             highlights.Add(go);
         }
 
+        // Return it
         return go;
     }
 
     public void HighlightAllowedMoves(bool[,] moves)
     {
+        // Loop though all tiles
         for (int i = 0; i < BoardManager.BOARD_SIZE; i++)
         {
             for (int j = 0; j < BoardManager.BOARD_SIZE; j++)
             {
+                // If the tile should be highlighted
                 if (moves[i, j])
                 {
-                    GameObject go = GetHighlightObject();
+                    // Get the highlight prefab
+                    GameObject go = GetHighlightObject(highlightPossibleMovesPrefab);
+
+                    // Set it active
                     go.SetActive(true);
                     go.transform.position = new Vector3(i, 0, j);
                 }
             }
         }
+    }
+
+    public void HighlightSelectedTile(int tileX, int tileY)
+    {
+        // Get the highlight prefab
+        GameObject go = GetHighlightObject(highlightSelectedTilePrefab);
+
+        // Set it active
+        go.SetActive(true);
+        go.transform.position = new Vector3(tileX, 0, tileY);
     }
 
 
