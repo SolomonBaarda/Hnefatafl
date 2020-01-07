@@ -28,15 +28,7 @@ public class Piece : MonoBehaviour
         Piece p, a, b;
         int i;
 
-
-
-
-        // TODO 
-        // Don't allow the piece to move to the edge of the board if it will be destroyed
-        // Same case as if between two players 
-
-
-
+        // TODO make this code simpler!
 
         // Right
         i = CurrentX;
@@ -54,7 +46,7 @@ public class Piece : MonoBehaviour
             // Possible valid move
             if (p == null)
             {
-                // Only check if not on the border
+                // Only check 3x3 if not on the border
                 if (CurrentY > 0 && CurrentY < BoardManager.BOARD_SIZE - 1)
                 {
                     // Get reference to tiles
@@ -67,6 +59,39 @@ public class Piece : MonoBehaviour
                             // Not valid
                             r[i, CurrentY] = false;
                             continue;
+                        }
+                    }
+                }
+                else
+                {
+                    // Top
+                    if(CurrentY == 0)
+                    {
+                        // Reference to tile below
+                        a = BoardManager.Instance.Board[i, CurrentY + 1];
+                        if(a != null)
+                        {
+                            if(isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[i, CurrentY] = false;
+                                continue;
+                            }
+                        }
+                    }
+                    // Bottom
+                    else if(CurrentY == BoardManager.BOARD_SIZE - 1)
+                    {
+                        // Reference to tile above
+                        a = BoardManager.Instance.Board[i, CurrentY - 1];
+                        if (a != null)
+                        {
+                            if (isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[i, CurrentY] = false;
+                                continue;
+                            }
                         }
                     }
                 }
@@ -112,6 +137,39 @@ public class Piece : MonoBehaviour
                         }
                     }
                 }
+                else
+                {
+                    // Top
+                    if (CurrentY == 0)
+                    {
+                        // Reference to tile below
+                        a = BoardManager.Instance.Board[i, CurrentY + 1];
+                        if (a != null)
+                        {
+                            if (isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[i, CurrentY] = false;
+                                continue;
+                            }
+                        }
+                    }
+                    // Bottom
+                    else if (CurrentY == BoardManager.BOARD_SIZE - 1)
+                    {
+                        // Reference to tile above
+                        a = BoardManager.Instance.Board[i, CurrentY - 1];
+                        if (a != null)
+                        {
+                            if (isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[i, CurrentY] = false;
+                                continue;
+                            }
+                        }
+                    }
+                }
                 // If we get here, the move is valid
                 r[i, CurrentY] = true;
             }
@@ -154,6 +212,39 @@ public class Piece : MonoBehaviour
                         }
                     }
                 }
+                else
+                {
+                    // Left
+                    if (CurrentX == 0)
+                    {
+                        // Reference to tile to the right
+                        a = BoardManager.Instance.Board[CurrentX, i + 1];
+                        if (a != null)
+                        {
+                            if (isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[CurrentX, i] = false;
+                                continue;
+                            }
+                        }
+                    }
+                    // Right
+                    else if (CurrentX == BoardManager.BOARD_SIZE - 1)
+                    {
+                        // Reference to tile to the left
+                        a = BoardManager.Instance.Board[CurrentX, i - 1];
+                        if (a != null)
+                        {
+                            if (isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[CurrentX, i] = false;
+                                continue;
+                            }
+                        }
+                    }
+                }
                 // If we get here, the move is valid
                 r[CurrentX, i] = true;
             }
@@ -193,6 +284,39 @@ public class Piece : MonoBehaviour
                             // Not valid
                             r[CurrentX, i] = false;
                             continue;
+                        }
+                    }
+                }
+                else
+                {
+                    // Left
+                    if (CurrentX == 0)
+                    {
+                        // Reference to tile to the right
+                        a = BoardManager.Instance.Board[CurrentX, i + 1];
+                        if (a != null)
+                        {
+                            if (isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[CurrentX, i] = false;
+                                continue;
+                            }
+                        }
+                    }
+                    // Right
+                    else if (CurrentX == BoardManager.BOARD_SIZE - 1)
+                    {
+                        // Reference to tile to the left
+                        a = BoardManager.Instance.Board[CurrentX, i - 1];
+                        if (a != null)
+                        {
+                            if (isAttacking != a.isAttacking)
+                            {
+                                // Not valid
+                                r[CurrentX, i] = false;
+                                continue;
+                            }
                         }
                     }
                 }

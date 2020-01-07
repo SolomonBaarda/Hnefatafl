@@ -149,7 +149,7 @@ public class BoardManager : MonoBehaviour
                 // Only bother to check if the cell contains a piece 
                 if (e != null)
                 {
-                    // Check the 3x3
+                    // Check the 3x3 around the piece
                     if (y > 0 && x > 0 && y < BOARD_SIZE - 1 && x < BOARD_SIZE - 1)
                     {
                         a = Board[x - 1, y];
@@ -158,18 +158,21 @@ public class BoardManager : MonoBehaviour
                         d = Board[x, y + 1];
 
                         // Check if the king is surrounded on all four sides (can't move)
-                        if (a != null && b != null && c != null && d != null && e != null)
+                        if (e.isKing)
                         {
-                            if (e.isKing && !a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
+                            if (a != null && b != null && c != null && d != null)
                             {
-                                // Surrounded on all sides
-                                // Defending wins 
-                                EndGame(false);
+                                if (e.isKing && !a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
+                                {
+                                    // Surrounded on all sides
+                                    // Defending wins 
+                                    EndGame(false);
+                                }
                             }
                         }
 
                         // Check horizontal
-                        if (a != null && b != null && e != null)
+                        if (a != null && b != null)
                         {
                             // Check if middle is different to the outside ones
                             if (e.isAttacking != a.isAttacking && a.isAttacking == b.isAttacking)
@@ -183,7 +186,7 @@ public class BoardManager : MonoBehaviour
                         }
 
                         // Check vertical
-                        if (c != null && d != null && e != null)
+                        if (c != null && d != null)
                         {
                             // Check if middle is different to the outside ones
                             if (e.isAttacking != c.isAttacking && c.isAttacking == d.isAttacking)
@@ -196,10 +199,10 @@ public class BoardManager : MonoBehaviour
                             }
                         }
                     }
+                    // The piece is at the edge of the board
+                    // Check if it is pinned by a piece from the other team
                     else
                     {
-
-                        // Piece is on the edge of the board (extra case)
                         // Horizontal
                         if (x == 0)
                         {
@@ -250,11 +253,6 @@ public class BoardManager : MonoBehaviour
                         }
                     }
                 }
-
-
-
-
-
             }
         }
 
