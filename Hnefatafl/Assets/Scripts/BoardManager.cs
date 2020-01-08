@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class BoardManager : MonoBehaviour
@@ -11,7 +10,7 @@ public class BoardManager : MonoBehaviour
     public Piece[,] Board { set; get; }
     private Piece selectedPiece;
 
-    private const float TILE_SIZE = 1.0f;
+    public const float TILE_SIZE = 1.0f;
     private const float TILE_OFFSET = 0.5f;
 
     public const int BOARD_SIZE = 11;
@@ -58,6 +57,12 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+
+        if (selectedPiece != null)
+        {
+            //BoardHighlight.Instance.HighlightHoverTile(selectedPiece, selectionX, selectionY, allowedMoves);
+        }
+
     }
 
     private void SelectPiece(int x, int y)
@@ -122,6 +127,11 @@ public class BoardManager : MonoBehaviour
 
     private void UpdateBoard()
     {
+        // TODO
+        // Redo this updateBoard method
+        // Consider adding it into the "move" method so that it can be expanded to add a "preview move" function 
+
+
         Piece a, b, c, d, e;
         int attackingCount = 0, defendingCount = 0;
 
@@ -206,24 +216,62 @@ public class BoardManager : MonoBehaviour
                         // Horizontal
                         if (x == 0)
                         {
-                            a = Board[x + 1, y];
-                            if (a != null)
+                            if (!e.isKing)
                             {
-                                if (e.isAttacking != a.isAttacking)
+                                a = Board[x + 1, y];
+                                if (a != null)
                                 {
-                                    Kill(e.CurrentX, e.CurrentY);
+                                    if (e.isAttacking != a.isAttacking)
+                                    {
+                                        Kill(e.CurrentX, e.CurrentY);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                a = Board[x + 1, y];
+                                b = Board[x, y - 1];
+                                c = Board[x, y + 1];
+
+                                if(a != null && b != null && c != null)
+                                {
+                                    if(!a.isAttacking && !b.isAttacking && !c.isAttacking)
+                                    {
+                                        // Surrounded on all sides
+                                        // Defending wins 
+                                        EndGame(false);
+                                    }
                                 }
                             }
 
                         }
                         else if (x == BOARD_SIZE - 1)
                         {
-                            a = Board[x - 1, y];
-                            if (a != null)
+                            if (!e.isKing)
                             {
-                                if (e.isAttacking != a.isAttacking)
+                                a = Board[x - 1, y];
+                                if (a != null)
                                 {
-                                    Kill(e.CurrentX, e.CurrentY);
+                                    if (!e.isKing && e.isAttacking != a.isAttacking)
+                                    {
+                                        Kill(e.CurrentX, e.CurrentY);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                a = Board[x - 1, y];
+                                b = Board[x, y - 1];
+                                c = Board[x, y + 1];
+
+                                if (a != null && b != null && c != null)
+                                {
+                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
+                                    {
+                                        // Surrounded on all sides
+                                        // Defending wins 
+                                        EndGame(false);
+                                    }
                                 }
                             }
                         }
@@ -231,23 +279,61 @@ public class BoardManager : MonoBehaviour
                         // Vertical 
                         if (y == 0)
                         {
-                            a = Board[x, y + 1];
-                            if (a != null)
+                            if (!e.isKing)
                             {
-                                if (e.isAttacking != a.isAttacking)
+                                a = Board[x, y + 1];
+                                if (a != null)
                                 {
-                                    Kill(e.CurrentX, e.CurrentY);
+                                    if (!e.isKing && e.isAttacking != a.isAttacking)
+                                    {
+                                        Kill(e.CurrentX, e.CurrentY);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                a = Board[x, y + 1];
+                                b = Board[x + 1, y];
+                                c = Board[x - 1, y];
+
+                                if (a != null && b != null && c != null)
+                                {
+                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
+                                    {
+                                        // Surrounded on all sides
+                                        // Defending wins 
+                                        EndGame(false);
+                                    }
                                 }
                             }
                         }
                         else if (y == BOARD_SIZE - 1)
                         {
-                            a = Board[x, y - 1];
-                            if (a != null)
+                            if (!e.isKing)
                             {
-                                if (e.isAttacking != a.isAttacking)
+                                a = Board[x, y - 1];
+                                if (a != null)
                                 {
-                                    Kill(e.CurrentX, e.CurrentY);
+                                    if (!e.isKing && e.isAttacking != a.isAttacking)
+                                    {
+                                        Kill(e.CurrentX, e.CurrentY);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                a = Board[x, y - 1];
+                                b = Board[x + 1, y];
+                                c = Board[x - 1, y];
+
+                                if (a != null && b != null && c != null)
+                                {
+                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
+                                    {
+                                        // Surrounded on all sides
+                                        // Defending wins 
+                                        EndGame(false);
+                                    }
                                 }
                             }
                         }
@@ -499,7 +585,6 @@ public class BoardManager : MonoBehaviour
                 Vector3.forward * selectionY + Vector3.right * (selectionX + 1));
         }
     }
-
 
 
     private void EndGame(bool attackingTeamWon)

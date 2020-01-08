@@ -10,10 +10,19 @@ public class BoardHighlight : MonoBehaviour
     public GameObject highlightSelectedTilePrefab;
     private List<GameObject> highlights;
 
+    private GameObject attackingTileHover;
+    private GameObject defendingTileHover;
+
     private void Start()
     {
         Instance = this;
         highlights = new List<GameObject>();
+
+        /*
+        attackingTileHover = GetHighlightObject(BoardManager.Instance.gamePiecePrefabs[1]);
+        defendingTileHover = GetHighlightObject(BoardManager.Instance.gamePiecePrefabs[0]);
+        HideHoverHighlight();
+        */
     }
 
     private GameObject GetHighlightObject(GameObject highlightPrefab)
@@ -64,6 +73,38 @@ public class BoardHighlight : MonoBehaviour
         go.transform.position = new Vector3(tileX, 0, tileY);
     }
 
+    public void HighlightHoverTile(Piece selected, int hoverX, int hoverY, bool[,] validMoves)
+    {
+        print(hoverX + ", " + hoverY);
+        if (hoverX >= 0 && hoverX < BoardManager.BOARD_SIZE && hoverY >= 0 && hoverY < BoardManager.BOARD_SIZE)
+        {
+            if (selected != null)
+            {
+                if (validMoves[hoverX, hoverY])
+                {
+                    if (hoverX != selected.CurrentX && hoverY != selected.CurrentY)
+                    {
+                        GameObject hover;
+                        if (selected.isAttacking)
+                        {
+                            hover = attackingTileHover;
+                        }
+                        else
+                        {
+                            hover = defendingTileHover;
+                        }
+
+                        hover.SetActive(true);
+                        hover.transform.position = new Vector3(hoverX + (BoardManager.TILE_SIZE / 2), 0, hoverY + (BoardManager.TILE_SIZE / 2));
+                        return;
+                    }
+                }
+            }
+        }
+
+        HideHoverHighlight();
+    }
+
 
     public void HideHighlights()
     {
@@ -71,6 +112,12 @@ public class BoardHighlight : MonoBehaviour
         {
             go.SetActive(false);
         }
+    }
+
+    private void HideHoverHighlight()
+    {
+        attackingTileHover.SetActive(false);
+        defendingTileHover.SetActive(false);
     }
 
 }

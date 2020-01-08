@@ -24,319 +24,153 @@ public class Piece : MonoBehaviour
         // Array of valid moves for the piece 
         bool[,] r = new bool[BoardManager.BOARD_SIZE, BoardManager.BOARD_SIZE];
 
-        // Temp values
-        Piece p, a, b;
-        int i;
+        CheckPossibleMoveXAxis(+1, ref r);
+        CheckPossibleMoveXAxis(-1, ref r);
+        CheckPossibleMoveYAxis(+1, ref r);
+        CheckPossibleMoveYAxis(-1, ref r);
 
-        // TODO make this code simpler!
-
-        // Right
-        i = CurrentX;
-        while (true)
-        {
-            i++;
-            // Break out if not valid values
-            if (i < 0 || i >= BoardManager.BOARD_SIZE)
-            {
-                break;
-            }
-
-            // Reference to the tile
-            p = BoardManager.Instance.Board[i, CurrentY];
-            // Possible valid move
-            if (p == null)
-            {
-                // Only check 3x3 if not on the border
-                if (CurrentY > 0 && CurrentY < BoardManager.BOARD_SIZE - 1)
-                {
-                    // Get reference to tiles
-                    a = BoardManager.Instance.Board[i, CurrentY - 1];
-                    b = BoardManager.Instance.Board[i, CurrentY + 1];
-                    if (a != null && b != null)
-                    {
-                        if (isAttacking != a.isAttacking && isAttacking != b.isAttacking)
-                        {
-                            // Not valid
-                            r[i, CurrentY] = false;
-                            continue;
-                        }
-                    }
-                }
-                else
-                {
-                    // Top
-                    if(CurrentY == 0)
-                    {
-                        // Reference to tile below
-                        a = BoardManager.Instance.Board[i, CurrentY + 1];
-                        if(a != null)
-                        {
-                            if(isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[i, CurrentY] = false;
-                                continue;
-                            }
-                        }
-                    }
-                    // Bottom
-                    else if(CurrentY == BoardManager.BOARD_SIZE - 1)
-                    {
-                        // Reference to tile above
-                        a = BoardManager.Instance.Board[i, CurrentY - 1];
-                        if (a != null)
-                        {
-                            if (isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[i, CurrentY] = false;
-                                continue;
-                            }
-                        }
-                    }
-                }
-                // If we get here, the move is valid
-                r[i, CurrentY] = true;
-            }
-            // Not valid move 
-            else
-            {
-                break;
-            }
-        }
-
-        // left
-        i = CurrentX;
-        while (true)
-        {
-            i--;
-            // Break out if not valid values
-            if (i < 0 || i >= BoardManager.BOARD_SIZE)
-            {
-                break;
-            }
-
-            // Reference to the tile
-            p = BoardManager.Instance.Board[i, CurrentY];
-            // Possible valid move
-            if (p == null)
-            {
-                // Only check if not on the border
-                if (CurrentY > 0 && CurrentY < BoardManager.BOARD_SIZE - 1)
-                {
-                    // Get reference to tiles
-                    a = BoardManager.Instance.Board[i, CurrentY - 1];
-                    b = BoardManager.Instance.Board[i, CurrentY + 1];
-                    if (a != null && b != null)
-                    {
-                        if (isAttacking != a.isAttacking && isAttacking != b.isAttacking)
-                        {
-                            // Not valid
-                            r[i, CurrentY] = false;
-                            continue;
-                        }
-                    }
-                }
-                else
-                {
-                    // Top
-                    if (CurrentY == 0)
-                    {
-                        // Reference to tile below
-                        a = BoardManager.Instance.Board[i, CurrentY + 1];
-                        if (a != null)
-                        {
-                            if (isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[i, CurrentY] = false;
-                                continue;
-                            }
-                        }
-                    }
-                    // Bottom
-                    else if (CurrentY == BoardManager.BOARD_SIZE - 1)
-                    {
-                        // Reference to tile above
-                        a = BoardManager.Instance.Board[i, CurrentY - 1];
-                        if (a != null)
-                        {
-                            if (isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[i, CurrentY] = false;
-                                continue;
-                            }
-                        }
-                    }
-                }
-                // If we get here, the move is valid
-                r[i, CurrentY] = true;
-            }
-            // Not valid move 
-            else
-            {
-                break;
-            }
-        }
-
-        // Down
-        i = CurrentY;
-        while (true)
-        {
-            i++;
-            // Break out if not valid values
-            if (i < 0 || i >= BoardManager.BOARD_SIZE)
-            {
-                break;
-            }
-
-            // Reference to the tile
-            p = BoardManager.Instance.Board[CurrentX, i];
-            // Possible valid move
-            if (p == null)
-            {
-                // Only check if not on the border
-                if (CurrentX > 0 && CurrentX < BoardManager.BOARD_SIZE - 1)
-                {
-                    // Get reference to tiles
-                    a = BoardManager.Instance.Board[CurrentX - 1, i];
-                    b = BoardManager.Instance.Board[CurrentX + 1, i];
-                    if (a != null && b != null)
-                    {
-                        if (isAttacking != a.isAttacking && isAttacking != b.isAttacking)
-                        {
-                            // Not valid
-                            r[CurrentX, i] = false;
-                            continue;
-                        }
-                    }
-                }
-                else
-                {
-                    // Left
-                    if (CurrentX == 0)
-                    {
-                        // Reference to tile to the right
-                        a = BoardManager.Instance.Board[CurrentX, i + 1];
-                        if (a != null)
-                        {
-                            if (isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[CurrentX, i] = false;
-                                continue;
-                            }
-                        }
-                    }
-                    // Right
-                    else if (CurrentX == BoardManager.BOARD_SIZE - 1)
-                    {
-                        // Reference to tile to the left
-                        a = BoardManager.Instance.Board[CurrentX, i - 1];
-                        if (a != null)
-                        {
-                            if (isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[CurrentX, i] = false;
-                                continue;
-                            }
-                        }
-                    }
-                }
-                // If we get here, the move is valid
-                r[CurrentX, i] = true;
-            }
-            // Not valid move 
-            else
-            {
-                break;
-            }
-        }
-
-        // Up
-        i = CurrentY;
-        while (true)
-        {
-            i--;
-            // Break out if not valid values
-            if (i < 0 || i >= BoardManager.BOARD_SIZE)
-            {
-                break;
-            }
-
-            // Reference to the tile
-            p = BoardManager.Instance.Board[CurrentX, i];
-            // Possible valid move
-            if (p == null)
-            {
-                // Only check if not on the border
-                if (CurrentX > 0 && CurrentX < BoardManager.BOARD_SIZE - 1)
-                {
-                    // Get reference to tiles
-                    a = BoardManager.Instance.Board[CurrentX - 1, i];
-                    b = BoardManager.Instance.Board[CurrentX + 1, i];
-                    if (a != null && b != null)
-                    {
-                        if (isAttacking != a.isAttacking && isAttacking != b.isAttacking)
-                        {
-                            // Not valid
-                            r[CurrentX, i] = false;
-                            continue;
-                        }
-                    }
-                }
-                else
-                {
-                    // Left
-                    if (CurrentX == 0)
-                    {
-                        // Reference to tile to the right
-                        a = BoardManager.Instance.Board[CurrentX, i + 1];
-                        if (a != null)
-                        {
-                            if (isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[CurrentX, i] = false;
-                                continue;
-                            }
-                        }
-                    }
-                    // Right
-                    else if (CurrentX == BoardManager.BOARD_SIZE - 1)
-                    {
-                        // Reference to tile to the left
-                        a = BoardManager.Instance.Board[CurrentX, i - 1];
-                        if (a != null)
-                        {
-                            if (isAttacking != a.isAttacking)
-                            {
-                                // Not valid
-                                r[CurrentX, i] = false;
-                                continue;
-                            }
-                        }
-                    }
-                }
-                // If we get here, the move is valid
-                r[CurrentX, i] = true;
-            }
-            // Not valid move 
-            else
-            {
-                break;
-            }
-        }
-
-        // Pieces not allowed to move to the far corners ever
+        // Pieces are never allowed to move to the corners
         r[0, 0] = false;
         r[0, BoardManager.BOARD_SIZE - 1] = false;
         r[BoardManager.BOARD_SIZE - 1, 0] = false;
         r[BoardManager.BOARD_SIZE - 1, BoardManager.BOARD_SIZE - 1] = false;
 
         return r;
+    }
+
+
+    private void CheckPossibleMoveXAxis(int direction, ref bool[,] r)
+    {
+        Piece current, a, b;
+
+        // direction = +/- 
+        int x = CurrentX;
+        while (true)
+        {
+            x += direction;
+            // Break out if not valid
+            if(x < 0 || x >= BoardManager.BOARD_SIZE)
+            {
+                break;
+            }
+
+            current = BoardManager.Instance.Board[x, CurrentY];
+            // Break out if there is a piece in the way
+            if(current != null)
+            {
+                break;
+            }
+            else
+            {
+                // At the edge (only check one direction)
+                if(CurrentY == 0 || CurrentY == BoardManager.BOARD_SIZE - 1)
+                {
+                    if(CurrentY == 0)
+                    {
+                        // Check below only
+                        a = BoardManager.Instance.Board[x, CurrentY + 1];
+                    }
+                    else
+                    {
+                        // Check above only
+                        a = BoardManager.Instance.Board[x, CurrentY - 1];
+                    }
+                    if(a != null)
+                    {
+                        if(isAttacking != a.isAttacking)
+                        {
+                            // Can't move here in this case
+                            r[x, CurrentY] = false;
+                            continue;
+                        }
+                    }
+                }
+                // In the middle (check both sides)
+                else
+                {
+                    a = BoardManager.Instance.Board[x, CurrentY - 1];
+                    b = BoardManager.Instance.Board[x, CurrentY + 1];
+                    if(a != null && b != null)
+                    {
+                        if(isAttacking != a.isAttacking && isAttacking != b.isAttacking)
+                        {
+                            // Can't move here in this case
+                            r[x, CurrentY] = false;
+                            continue;
+                        }
+                    }
+                }
+            }
+            // If we get here then the move must be valid
+            r[x, CurrentY] = true;
+        }
+    }
+
+    private void CheckPossibleMoveYAxis(int direction, ref bool[,] r)
+    {
+        Piece current, a, b;
+
+        // direction = +/- 
+        int y = CurrentY;
+        while (true)
+        {
+            y += direction;
+            // Break out if not valid
+            if (y < 0 || y >= BoardManager.BOARD_SIZE)
+            {
+                break;
+            }
+
+            current = BoardManager.Instance.Board[CurrentX, y];
+            // Break out if there is a piece in the way
+            if (current != null)
+            {
+                break;
+            }
+            else
+            {
+                // At the edge (only check one direction)
+                if (CurrentX == 0 || CurrentX == BoardManager.BOARD_SIZE - 1)
+                {
+                    if (CurrentX == 0)
+                    {
+                        // Check right only
+                        a = BoardManager.Instance.Board[CurrentX + 1, y];
+                    }
+                    else
+                    {
+                        // Check left only
+                        a = BoardManager.Instance.Board[CurrentX - 1, y];
+                    }
+                    if (a != null)
+                    {
+                        if (isAttacking != a.isAttacking)
+                        {
+                            // Can't move here in this case
+                            r[CurrentX, y] = false;
+                            continue;
+                        }
+                    }
+                }
+                // In the middle (check both sides)
+                else
+                {
+                    a = BoardManager.Instance.Board[CurrentX - 1, y];
+                    b = BoardManager.Instance.Board[CurrentX + 1, y];
+                    if (a != null && b != null)
+                    {
+                        if (isAttacking != a.isAttacking && isAttacking != b.isAttacking)
+                        {
+                            // Can't move here in this case
+                            r[CurrentX, y] = false;
+                            continue;
+                        }
+                    }
+                }
+            }
+            // If we get here then the move must be valid
+            r[CurrentX, y] = true;
+        }
     }
 
 }

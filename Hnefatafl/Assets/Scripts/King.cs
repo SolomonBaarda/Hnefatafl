@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class King : Piece
 {
+
     public override bool[,] PossibleMove()
     {
         // Array of valid moves for the piece 
@@ -12,12 +13,12 @@ public class King : Piece
         Piece p;
 
         // Check 3x3 around the king 
-        for (int y = CurrentY - 1; y <= CurrentY + 1; y++)
-        {
-            for (int x = CurrentX - 1; x <= CurrentX + 1; x++)
+        for(int y = CurrentY - 1; y <= CurrentY + 1; y++)
+        {        
+            for(int x = CurrentX - 1; x <= CurrentX + 1; x++)
             {
                 // Ensure within the board
-                if (x >= 0 && x < BoardManager.BOARD_SIZE && y >= 0 && y < BoardManager.BOARD_SIZE)
+                if(x >= 0 && x < BoardManager.BOARD_SIZE && y >= 0 && y < BoardManager.BOARD_SIZE)
                 {
                     if (x == CurrentX || y == CurrentY)
                     {
@@ -35,5 +36,4 @@ public class King : Piece
 
         return r;
     }
-
 }
