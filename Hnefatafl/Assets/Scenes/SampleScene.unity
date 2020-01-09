@@ -192,6 +192,8 @@ MonoBehaviour:
     type: 3}
   highlightSelectedTilePrefab: {fileID: 5462941529662686077, guid: 04588f541dbfeae4eb53b5a31a210490,
     type: 3}
+  highlightPieceToRemovePrefab: {fileID: 5462941529662686077, guid: e08e7e366079b2c41821eb1d1aa10f36,
+    type: 3}
 --- !u!1 &635267242
 GameObject:
   m_ObjectHideFlags: 0

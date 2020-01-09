@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - BoardPlane
+  - HoverHighlight
+  - HighlightPieceToRemove
+  - HighlightPossibleMove
+  - HighlightSelectedTile
   layers:
   - Default
   - TransparentFX

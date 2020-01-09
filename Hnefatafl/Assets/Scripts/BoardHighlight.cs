@@ -8,27 +8,19 @@ public class BoardHighlight : MonoBehaviour
 
     public GameObject highlightPossibleMovesPrefab;
     public GameObject highlightSelectedTilePrefab;
+    public GameObject highlightPieceToRemovePrefab;
     private List<GameObject> highlights;
-
-    private GameObject attackingTileHover;
-    private GameObject defendingTileHover;
 
     private void Start()
     {
         Instance = this;
         highlights = new List<GameObject>();
-
-        /*
-        attackingTileHover = GetHighlightObject(BoardManager.Instance.gamePiecePrefabs[1]);
-        defendingTileHover = GetHighlightObject(BoardManager.Instance.gamePiecePrefabs[0]);
-        HideHoverHighlight();
-        */
     }
 
-    private GameObject GetHighlightObject(GameObject highlightPrefab)
+    private GameObject GetHighlightObject(GameObject highlightPrefab, string tag)
     {
         // Find the highlight prefab type
-        GameObject go = highlights.Find(g => !g.activeSelf);
+        GameObject go = highlights.Find(g => !g.activeSelf && g.CompareTag(tag));
 
         // Add it if it is not there
         if (go == null)
@@ -45,19 +37,19 @@ public class BoardHighlight : MonoBehaviour
     public void HighlightAllowedMoves(bool[,] moves)
     {
         // Loop though all tiles
-        for (int i = 0; i < BoardManager.BOARD_SIZE; i++)
+        for (int y = 0; y < BoardManager.BOARD_SIZE; y++)
         {
-            for (int j = 0; j < BoardManager.BOARD_SIZE; j++)
+            for (int x = 0; x < BoardManager.BOARD_SIZE; x++)
             {
                 // If the tile should be highlighted
-                if (moves[i, j])
+                if (moves[x, y])
                 {
                     // Get the highlight prefab
-                    GameObject go = GetHighlightObject(highlightPossibleMovesPrefab);
+                    GameObject go = GetHighlightObject(highlightPossibleMovesPrefab, "HighlightPossibleMove");
 
                     // Set it active
                     go.SetActive(true);
-                    go.transform.position = new Vector3(i, 0, j);
+                    go.transform.position = new Vector3(x, 0, y);
                 }
             }
         }
@@ -66,12 +58,29 @@ public class BoardHighlight : MonoBehaviour
     public void HighlightSelectedTile(int tileX, int tileY)
     {
         // Get the highlight prefab
-        GameObject go = GetHighlightObject(highlightSelectedTilePrefab);
+        GameObject go = GetHighlightObject(highlightSelectedTilePrefab, "HighlightSelectedTile");
 
         // Set it active
         go.SetActive(true);
         go.transform.position = new Vector3(tileX, 0, tileY);
     }
+
+
+    public void HighlightPiecesToRemove(List<Piece> toRemove)
+    {
+        HideHoverHighlight();
+
+        foreach(Piece p in toRemove)
+        {
+            // Get the highlight prefab
+            GameObject go = GetHighlightObject(highlightPieceToRemovePrefab, "HighlightPieceToRemove");
+
+            // Set it active
+            go.SetActive(true);
+            go.transform.position = new Vector3(p.CurrentX, 0.01f, p.CurrentY);
+        }
+    }
+
 
     public void HighlightHoverTile(Piece selected, int hoverX, int hoverY, bool[,] validMoves)
     {
@@ -87,11 +96,11 @@ public class BoardHighlight : MonoBehaviour
                         GameObject hover;
                         if (selected.isAttacking)
                         {
-                            hover = attackingTileHover;
+                            //hover = attackingTileHover;
                         }
                         else
                         {
-                            hover = defendingTileHover;
+                            //hover = defendingTileHover;
                         }
 
                         hover.SetActive(true);
@@ -114,10 +123,24 @@ public class BoardHighlight : MonoBehaviour
         }
     }
 
-    private void HideHoverHighlight()
+    public void HideHoverHighlight()
     {
-        attackingTileHover.SetActive(false);
-        defendingTileHover.SetActive(false);
+        // The child of the prefab must contain the "HoverHighlight" tag to be disabled
+
+        // Loop through all highlights 
+        foreach (GameObject go in highlights)
+        {
+            // Check the children of each
+            foreach(Transform t in go.transform)
+            {
+                // Disable all objects tagged 
+                if (t.CompareTag("HoverHighlight"))
+                {
+                    go.SetActive(false);
+                }
+            }
+
+        }
     }
 
 }

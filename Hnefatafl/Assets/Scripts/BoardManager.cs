@@ -17,6 +17,8 @@ public class BoardManager : MonoBehaviour
 
     private int selectionX = -1;
     private int selectionY = -1;
+    private int validHoverX = -1;
+    private int validHoverY = -1;
 
     public List<GameObject> gamePiecePrefabs;
     private List<GameObject> activePieces;
@@ -27,7 +29,6 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         isAttackingTurn = true;
-
         Instance = this;
 
         CreateBoard();
@@ -60,8 +61,28 @@ public class BoardManager : MonoBehaviour
 
         if (selectedPiece != null)
         {
-            //BoardHighlight.Instance.HighlightHoverTile(selectedPiece, selectionX, selectionY, allowedMoves);
+            if (selectionX >= 0 && selectionX < BOARD_SIZE && selectionY >= 0 && selectionY < BOARD_SIZE)
+            {
+                if (allowedMoves[selectionX, selectionY])
+                {
+                    // New hover piece has been selected
+                    if (selectionX != validHoverX || selectionY != validHoverY)
+                    {
+                        validHoverX = selectionX;
+                        validHoverY = selectionY;
+
+                        BoardHighlight.Instance.HighlightPiecesToRemove(TilesToRemove(selectedPiece, selectionX, selectionY));
+                        //BoardHighlight.Instance.HighlightHoverTile(selectedPiece, selectionX, selectionY, allowedMoves);
+                    }
+                    return;
+
+                }
+                validHoverX = -1;
+                validHoverY = -1;
+                BoardHighlight.Instance.HideHoverHighlight();
+            }
         }
+
 
     }
 
@@ -78,6 +99,8 @@ public class BoardManager : MonoBehaviour
         }
 
         bool hasAtLeastOneMove = false;
+
+        // Set allowed moves
         allowedMoves = Board[x, y].PossibleMove();
 
         // Set hasAtLeastOneMove
@@ -99,7 +122,10 @@ public class BoardManager : MonoBehaviour
             return;
         }
 
+        // Set selected piece
         selectedPiece = Board[x, y];
+
+        // Enable highlights
         BoardHighlight.Instance.HighlightSelectedTile(x, y);
         BoardHighlight.Instance.HighlightAllowedMoves(allowedMoves);
     }
@@ -108,12 +134,9 @@ public class BoardManager : MonoBehaviour
     {
         if (allowedMoves[x, y])
         {
-            print(TilesToRemove(Board[selectedPiece.CurrentX, selectedPiece.CurrentY], x, y).Count);
-
             // Kill any pieces
             foreach (Piece p in TilesToRemove(Board[selectedPiece.CurrentX, selectedPiece.CurrentY], x, y))
             {
-                print("killed " + p);
                 Kill(p.CurrentX, p.CurrentY);
             }
 
@@ -335,6 +358,39 @@ public class BoardManager : MonoBehaviour
     }
 
 
+    private bool KingIsTrapped(Piece start, int x, int y)
+    {
+        // TODO in progress
+
+        if (start != null)
+        {
+            if (!start.isAttacking)
+            {
+                if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
+                {
+                    Piece a, b, c, d;
+
+                    // Not on the edge
+                    if (x >= 1 && x < BOARD_SIZE - 1 && y >= 1 && y < BOARD_SIZE - 1)
+                    {
+                        a = Board[x - 1, y];
+                        b = Board[x + 1, y];
+                        c = Board[x, y - 1];
+                        d = Board[x, y + 1];
+
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
     private List<Piece> TilesToRemove(Piece start, int x, int y)
     {
         List<Piece> toRemove = new List<Piece>();
@@ -343,16 +399,12 @@ public class BoardManager : MonoBehaviour
         {
             if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
             {
-                bool[,] possibleMoves = start.PossibleMove();
-                // Ensure the move is valid
-                if (possibleMoves[x, y])
-                {
-                    // Check all four directions for pieces to remove
-                    CheckTilesToRemoveX(start, x, y, +1, ref toRemove);
-                    CheckTilesToRemoveX(start, x, y, -1, ref toRemove);
-                    CheckTilesToRemoveY(start, x, y, +1, ref toRemove);
-                    CheckTilesToRemoveY(start, x, y, -1, ref toRemove);
-                }
+                // Check all four directions for pieces to remove
+                CheckTilesToRemoveX(start, x, y, +1, ref toRemove);
+                CheckTilesToRemoveX(start, x, y, -1, ref toRemove);
+                CheckTilesToRemoveY(start, x, y, +1, ref toRemove);
+                CheckTilesToRemoveY(start, x, y, -1, ref toRemove);
+
             }
         }
         return toRemove;
@@ -376,7 +428,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (start.isAttacking == f.isAttacking && start.isAttacking != m.isAttacking)
                 {
-                    if(!m.isKing)
+                    if (!m.isKing)
                     {
                         // Middle piece needs to be removed
                         toRemove.Add(m);
