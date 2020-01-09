@@ -9,6 +9,9 @@ TagManager:
   - HighlightPieceToRemove
   - HighlightPossibleMove
   - HighlightSelectedTile
+  - HighlightKing
+  - HighlightAttacking
+  - HighlightDefending
   layers:
   - Default
   - TransparentFX

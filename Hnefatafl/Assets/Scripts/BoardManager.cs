@@ -48,7 +48,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (selectedPiece == null)
                 {
-                    // Select the new piece
+                    // Select the new piece if not selected 
                     SelectPiece(selectionX, selectionY);
                 }
                 else
@@ -59,6 +59,7 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        // Do the highlights for hovering 
         if (selectedPiece != null)
         {
             if (selectionX >= 0 && selectionX < BOARD_SIZE && selectionY >= 0 && selectionY < BOARD_SIZE)
@@ -68,15 +69,18 @@ public class BoardManager : MonoBehaviour
                     // New hover piece has been selected
                     if (selectionX != validHoverX || selectionY != validHoverY)
                     {
+                        // Set the currently shown hover tile
                         validHoverX = selectionX;
                         validHoverY = selectionY;
 
+                        // Display the highlights 
                         BoardHighlight.Instance.HighlightPiecesToRemove(TilesToRemove(selectedPiece, selectionX, selectionY));
-                        //BoardHighlight.Instance.HighlightHoverTile(selectedPiece, selectionX, selectionY, allowedMoves);
+                        BoardHighlight.Instance.HighlightHoverTile(selectedPiece, selectionX, selectionY);
                     }
                     return;
 
                 }
+                // If we get here, the cell being hovered over is not valid, so reset the values and hide the highlight 
                 validHoverX = -1;
                 validHoverY = -1;
                 BoardHighlight.Instance.HideHoverHighlight();
@@ -146,7 +150,19 @@ public class BoardManager : MonoBehaviour
             selectedPiece.SetPosition(x, y);
             Board[x, y] = selectedPiece;
 
+            // Check if the king has moved to the corner
+            if(selectedPiece.isKing)
+            {
+                if((selectedPiece.CurrentX == 0 || selectedPiece.CurrentX == BOARD_SIZE - 1) && (selectedPiece.CurrentY == 0 || selectedPiece.CurrentY == BOARD_SIZE - 1))
+                {
+                    // King has reached the corner
+                    // Attacking wins
+                    EndGame(true);
+                }
+            }
+
             // Check if a piece needs to be removed
+            // Will be removed soon
             UpdateBoard();
 
             isAttackingTurn = !isAttackingTurn;
@@ -161,9 +177,7 @@ public class BoardManager : MonoBehaviour
         // TODO
         // Redo this updateBoard method
         // keep it in this method, but simplify it
-        // allow for expansion to add a "preview move" function, that returns any cells 
-        // that would be destroyed if the piece was to move there
-
+        // Move king surrounded check into move function as well
 
         Piece a, b, c, d, e;
         int attackingCount = 0, defendingCount = 0;
@@ -303,47 +317,6 @@ public class BoardManager : MonoBehaviour
             }
         }
 
-        a = Board[0, 0];
-        b = Board[0, BOARD_SIZE - 1];
-        c = Board[BOARD_SIZE - 1, 0];
-        d = Board[BOARD_SIZE - 1, BOARD_SIZE - 1];
-
-        if (a != null)
-        {
-            if (a.isKing)
-            {
-                // King has reached the corner
-                // Attacking wins
-                EndGame(true);
-            }
-        }
-        if (b != null)
-        {
-            if (b.isKing)
-            {
-                // King has reached the corner
-                // Attacking wins
-                EndGame(true);
-            }
-        }
-        if (c != null)
-        {
-            if (c.isKing)
-            {
-                // King has reached the corner
-                // Attacking wins
-                EndGame(true);
-            }
-        }
-        if (d != null)
-        {
-            if (d.isKing)
-            {
-                // King has reached the corner
-                // Attacking wins
-                EndGame(true);
-            }
-        }
 
         if (attackingCount < 2)
         {

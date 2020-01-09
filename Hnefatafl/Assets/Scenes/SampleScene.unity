@@ -188,11 +188,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afe92a554a6a27e41ac0d5c1567fc4ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  highlightPossibleMovesPrefab: {fileID: 5462941529662686077, guid: 319489f1b05708f4a881f5826c004bf8,
+  possibleMovesPrefab: {fileID: 5462941529662686077, guid: 319489f1b05708f4a881f5826c004bf8,
     type: 3}
-  highlightSelectedTilePrefab: {fileID: 5462941529662686077, guid: 04588f541dbfeae4eb53b5a31a210490,
+  selectedTilePrefab: {fileID: 5462941529662686077, guid: 04588f541dbfeae4eb53b5a31a210490,
     type: 3}
-  highlightPieceToRemovePrefab: {fileID: 5462941529662686077, guid: e08e7e366079b2c41821eb1d1aa10f36,
+  pieceToRemovePrefab: {fileID: 5462941529662686077, guid: e08e7e366079b2c41821eb1d1aa10f36,
+    type: 3}
+  defendingHighlightPrefab: {fileID: 3725232881663881239, guid: 1563cfba402c32a48945ab2199b7f858,
+    type: 3}
+  attackingHighlightPrefab: {fileID: 4745625508159190940, guid: 1740dffbaf981d64295d9b9bb7b4b0b2,
+    type: 3}
+  kingHighlightPrefab: {fileID: 4817167372568489241, guid: 6ed3bb996c075b64aae06d7ea03c00db,
     type: 3}
 --- !u!1 &635267242
 GameObject:
