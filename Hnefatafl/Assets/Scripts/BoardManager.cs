@@ -108,8 +108,16 @@ public class BoardManager : MonoBehaviour
     {
         if (allowedMoves[x, y])
         {
-            Piece p = Board[x, y];
+            print(TilesToRemove(Board[selectedPiece.CurrentX, selectedPiece.CurrentY], x, y).Count);
 
+            // Kill any pieces
+            foreach (Piece p in TilesToRemove(Board[selectedPiece.CurrentX, selectedPiece.CurrentY], x, y))
+            {
+                print("killed " + p);
+                Kill(p.CurrentX, p.CurrentY);
+            }
+
+            // Make the move
             Board[selectedPiece.CurrentX, selectedPiece.CurrentY] = null;
             selectedPiece.transform.position = GetTileCentre(x, y);
             selectedPiece.SetPosition(x, y);
@@ -129,7 +137,9 @@ public class BoardManager : MonoBehaviour
     {
         // TODO
         // Redo this updateBoard method
-        // Consider adding it into the "move" method so that it can be expanded to add a "preview move" function 
+        // keep it in this method, but simplify it
+        // allow for expansion to add a "preview move" function, that returns any cells 
+        // that would be destroyed if the piece was to move there
 
 
         Piece a, b, c, d, e;
@@ -180,34 +190,6 @@ public class BoardManager : MonoBehaviour
                                 }
                             }
                         }
-
-                        // Check horizontal
-                        if (a != null && b != null)
-                        {
-                            // Check if middle is different to the outside ones
-                            if (e.isAttacking != a.isAttacking && a.isAttacking == b.isAttacking)
-                            {
-                                if (!e.isKing)
-                                {
-                                    // Delete piece 
-                                    Kill(e.CurrentX, e.CurrentY);
-                                }
-                            }
-                        }
-
-                        // Check vertical
-                        if (c != null && d != null)
-                        {
-                            // Check if middle is different to the outside ones
-                            if (e.isAttacking != c.isAttacking && c.isAttacking == d.isAttacking)
-                            {
-                                if (!e.isKing)
-                                {
-                                    // Delete piece 
-                                    Kill(e.CurrentX, e.CurrentY);
-                                }
-                            }
-                        }
                     }
                     // The piece is at the edge of the board
                     // Check if it is pinned by a piece from the other team
@@ -216,26 +198,15 @@ public class BoardManager : MonoBehaviour
                         // Horizontal
                         if (x == 0)
                         {
-                            if (!e.isKing)
-                            {
-                                a = Board[x + 1, y];
-                                if (a != null)
-                                {
-                                    if (e.isAttacking != a.isAttacking)
-                                    {
-                                        Kill(e.CurrentX, e.CurrentY);
-                                    }
-                                }
-                            }
-                            else
+                            if (e.isKing)
                             {
                                 a = Board[x + 1, y];
                                 b = Board[x, y - 1];
                                 c = Board[x, y + 1];
 
-                                if(a != null && b != null && c != null)
+                                if (a != null && b != null && c != null)
                                 {
-                                    if(!a.isAttacking && !b.isAttacking && !c.isAttacking)
+                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
                                     {
                                         // Surrounded on all sides
                                         // Defending wins 
@@ -247,18 +218,7 @@ public class BoardManager : MonoBehaviour
                         }
                         else if (x == BOARD_SIZE - 1)
                         {
-                            if (!e.isKing)
-                            {
-                                a = Board[x - 1, y];
-                                if (a != null)
-                                {
-                                    if (!e.isKing && e.isAttacking != a.isAttacking)
-                                    {
-                                        Kill(e.CurrentX, e.CurrentY);
-                                    }
-                                }
-                            }
-                            else
+                            if (e.isKing)
                             {
                                 a = Board[x - 1, y];
                                 b = Board[x, y - 1];
@@ -279,18 +239,7 @@ public class BoardManager : MonoBehaviour
                         // Vertical 
                         if (y == 0)
                         {
-                            if (!e.isKing)
-                            {
-                                a = Board[x, y + 1];
-                                if (a != null)
-                                {
-                                    if (!e.isKing && e.isAttacking != a.isAttacking)
-                                    {
-                                        Kill(e.CurrentX, e.CurrentY);
-                                    }
-                                }
-                            }
-                            else
+                            if (e.isKing)
                             {
                                 a = Board[x, y + 1];
                                 b = Board[x + 1, y];
@@ -309,18 +258,7 @@ public class BoardManager : MonoBehaviour
                         }
                         else if (y == BOARD_SIZE - 1)
                         {
-                            if (!e.isKing)
-                            {
-                                a = Board[x, y - 1];
-                                if (a != null)
-                                {
-                                    if (!e.isKing && e.isAttacking != a.isAttacking)
-                                    {
-                                        Kill(e.CurrentX, e.CurrentY);
-                                    }
-                                }
-                            }
-                            else
+                            if (e.isKing)
                             {
                                 a = Board[x, y - 1];
                                 b = Board[x + 1, y];
@@ -394,8 +332,176 @@ public class BoardManager : MonoBehaviour
             // Attacking wins
             EndGame(true);
         }
+    }
+
+
+    private List<Piece> TilesToRemove(Piece start, int x, int y)
+    {
+        List<Piece> toRemove = new List<Piece>();
+
+        if (start != null)
+        {
+            if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
+            {
+                bool[,] possibleMoves = start.PossibleMove();
+                // Ensure the move is valid
+                if (possibleMoves[x, y])
+                {
+                    // Check all four directions for pieces to remove
+                    CheckTilesToRemoveX(start, x, y, +1, ref toRemove);
+                    CheckTilesToRemoveX(start, x, y, -1, ref toRemove);
+                    CheckTilesToRemoveY(start, x, y, +1, ref toRemove);
+                    CheckTilesToRemoveY(start, x, y, -1, ref toRemove);
+                }
+            }
+        }
+        return toRemove;
+    }
+
+
+
+    private void CheckTilesToRemoveX(Piece start, int x, int y, int direction, ref List<Piece> toRemove)
+    {
+        // Reference to "middle" and "far" pieces
+        Piece m, f;
+
+        // Ensure not on the edge
+        if (x >= 2 && x <= BOARD_SIZE - 3)
+        {
+            // Get reference to the pieces
+            m = Board[x + direction, y];
+            f = Board[x + (2 * direction), y];
+
+            if (m != null && f != null)
+            {
+                if (start.isAttacking == f.isAttacking && start.isAttacking != m.isAttacking)
+                {
+                    if(!m.isKing)
+                    {
+                        // Middle piece needs to be removed
+                        toRemove.Add(m);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // On the left side
+            if (x == 1)
+            {
+                if (direction < 0)
+                {
+                    m = Board[x + direction, y];
+
+                    if (m != null)
+                    {
+                        if (start.isAttacking != m.isAttacking)
+                        {
+                            if (!m.isKing)
+                            {
+                                // Middle piece needs to be removed
+                                toRemove.Add(m);
+                            }
+                        }
+                    }
+                }
+
+            }
+            // On the right side
+            else if (x == BOARD_SIZE - 2)
+            {
+                if (direction > 0)
+                {
+                    m = Board[x + direction, y];
+
+                    if (m != null)
+                    {
+                        if (start.isAttacking != m.isAttacking)
+                        {
+                            if (!m.isKing)
+                            {
+                                // Middle piece needs to be removed
+                                toRemove.Add(m);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
     }
+
+    private void CheckTilesToRemoveY(Piece start, int x, int y, int direction, ref List<Piece> toRemove)
+    {
+        // Reference to "middle" and "far" pieces
+        Piece m, f;
+
+        // Ensure not on the edge
+        if (y >= 2 && y <= BOARD_SIZE - 3)
+        {
+            // Get reference to the pieces
+            m = Board[x, y + direction];
+            f = Board[x, y + (2 * direction)];
+
+            if (m != null && f != null)
+            {
+                if (start.isAttacking == f.isAttacking && start.isAttacking != m.isAttacking)
+                {
+                    if (!m.isKing)
+                    {
+                        // Middle piece needs to be removed
+                        toRemove.Add(m);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // On the top
+            if (y == 1)
+            {
+                if (direction < 0)
+                {
+                    m = Board[x, y + direction];
+
+                    if (m != null)
+                    {
+                        if (start.isAttacking != m.isAttacking)
+                        {
+                            if (!m.isKing)
+                            {
+                                // Middle piece needs to be removed
+                                toRemove.Add(m);
+                            }
+                        }
+                    }
+                }
+
+            }
+            // On the bottom
+            else if (y == BOARD_SIZE - 2)
+            {
+                if (direction > 0)
+                {
+                    m = Board[x, y + direction];
+
+                    if (m != null)
+                    {
+                        if (start.isAttacking != m.isAttacking)
+                        {
+                            if (!m.isKing)
+                            {
+                                // Middle piece needs to be removed
+                                toRemove.Add(m);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
 
     private void Kill(int x, int y)
     {
