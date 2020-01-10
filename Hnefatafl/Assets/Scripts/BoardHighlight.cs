@@ -117,24 +117,30 @@ public class BoardHighlight : MonoBehaviour
 
                 hover.SetActive(true);
                 hover.transform.position = new Vector3(hoverX + (BoardManager.TILE_SIZE / 2), 0, hoverY + (BoardManager.TILE_SIZE / 2));
-                
-                // Set each piece highlight to be transparent
-                foreach(Transform t in hover.transform)
-                {
-                    if(t.GetComponent<MeshRenderer>())
-                    {
-                        // Can't assign alpha seperately so have to do it this way
-                        Color c = t.GetComponent<MeshRenderer>().material.color;
-                        c.a = 0.5f;
-                        t.GetComponent<MeshRenderer>().material.color = c;
-                    }
-                }
+
+                SetTransparent(hover, 0.5f);
                 
                 return;
             }
         }
 
         HideHoverHighlight();
+    }
+
+
+    public void SetTransparent(GameObject g, float percent)
+    {
+        // Set each piece highlight to be transparent
+        foreach (Transform t in g.transform)
+        {
+            if (t.GetComponent<MeshRenderer>())
+            {
+                // Can't assign alpha seperately so have to do it this way
+                Color c = t.GetComponent<MeshRenderer>().material.color;
+                c.a = percent;
+                t.GetComponent<MeshRenderer>().material.color = c;
+            }
+        }
     }
 
 
