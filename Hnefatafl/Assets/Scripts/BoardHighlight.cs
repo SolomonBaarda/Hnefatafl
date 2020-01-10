@@ -9,9 +9,10 @@ public class BoardHighlight : MonoBehaviour
     public GameObject possibleMovesPrefab;
     public GameObject selectedTilePrefab;
     public GameObject pieceToRemovePrefab;
-    public GameObject defendingHighlightPrefab;
-    public GameObject attackingHighlightPrefab;
-    public GameObject kingHighlightPrefab;
+
+    public GameObject defendingPrefab;
+    public GameObject attackingPrefab;
+    public GameObject kingPrefab;
 
     private List<GameObject> highlights;
 
@@ -96,25 +97,39 @@ public class BoardHighlight : MonoBehaviour
         {
             if (hoverX >= 0 && hoverX < BoardManager.BOARD_SIZE && hoverY >= 0 && hoverY < BoardManager.BOARD_SIZE)
             {
+                // Set the correct prefab
                 GameObject hover;
                 if (selected.isAttacking)
                 {
                     if(selected.isKing)
                     {
-                        hover = GetHighlightObject(kingHighlightPrefab, "HighlightKing");
+                        hover = GetHighlightObject(kingPrefab, "HighlightKing");
                     }
                     else
                     {
-                        hover = GetHighlightObject(attackingHighlightPrefab, "HighlightAttacking");
+                        hover = GetHighlightObject(attackingPrefab, "HighlightAttacking");
                     }
                 }
                 else
                 {
-                    hover = GetHighlightObject(defendingHighlightPrefab, "HighlightDefending");
+                    hover = GetHighlightObject(defendingPrefab, "HighlightDefending");
                 }
 
                 hover.SetActive(true);
                 hover.transform.position = new Vector3(hoverX + (BoardManager.TILE_SIZE / 2), 0, hoverY + (BoardManager.TILE_SIZE / 2));
+                
+                // Set each piece highlight to be transparent
+                foreach(Transform t in hover.transform)
+                {
+                    if(t.GetComponent<MeshRenderer>())
+                    {
+                        // Can't assign alpha seperately so have to do it this way
+                        Color c = t.GetComponent<MeshRenderer>().material.color;
+                        c.a = 0.5f;
+                        t.GetComponent<MeshRenderer>().material.color = c;
+                    }
+                }
+                
                 return;
             }
         }

@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
-
     public static BoardManager Instance { set; get; }
     private bool[,] allowedMoves { set; get; }
 
@@ -20,11 +19,15 @@ public class BoardManager : MonoBehaviour
     private int validHoverX = -1;
     private int validHoverY = -1;
 
-    public List<GameObject> gamePiecePrefabs;
+    public GameObject defendingPrefab;
+    public GameObject attackingPrefab;
+    public GameObject kingPrefab;
     private List<GameObject> activePieces;
     public List<GameObject> gameTilePrefabs;
 
     public bool isAttackingTurn;
+
+    private Piece king;
 
     private void Start()
     {
@@ -44,17 +47,29 @@ public class BoardManager : MonoBehaviour
         // Left click
         if (Input.GetMouseButtonDown(0))
         {
-            if (selectionX >= 0 && selectionY >= 0)
+            if (selectionX >= 0 && selectionY >= 0 && selectionX < BOARD_SIZE && selectionY < BOARD_SIZE)
             {
-                if (selectedPiece == null)
+                bool firstClick = false;
+
+                // Select new piece
+                if (Board[selectionX, selectionY] != null)
                 {
-                    // Select the new piece if not selected 
-                    SelectPiece(selectionX, selectionY);
+                    if(selectedPiece == null || selectedPiece != Board[selectionX, selectionY])
+                    {
+                        SelectPiece(selectionX, selectionY);
+                        firstClick = true;
+                    }
+
                 }
-                else
+
+                if(!firstClick)
                 {
-                    // Move the piece
-                    MovePiece(selectionX, selectionY);
+                    // Move it if there is one selected
+                    if (selectedPiece != null)
+                    {
+                        // Move the piece
+                        MovePiece(selectionX, selectionY);
+                    }
                 }
             }
         }
@@ -87,7 +102,6 @@ public class BoardManager : MonoBehaviour
             }
         }
 
-
     }
 
     private void SelectPiece(int x, int y)
@@ -95,24 +109,26 @@ public class BoardManager : MonoBehaviour
         // Not a valid selection 
         if (Board[x, y] == null)
         {
+            UnselectPiece();
             return;
         }
         if (Board[x, y].isAttacking != isAttackingTurn)
         {
+            UnselectPiece();
             return;
         }
 
         bool hasAtLeastOneMove = false;
 
         // Set allowed moves
-        allowedMoves = Board[x, y].PossibleMove();
+        bool[,] possibleAllowedMoves = Board[x, y].PossibleMove();
 
         // Set hasAtLeastOneMove
         for (int i = 0; i < BOARD_SIZE; i++)
         {
             for (int j = 0; j < BOARD_SIZE; j++)
             {
-                if (allowedMoves[i, j])
+                if (possibleAllowedMoves[i, j])
                 {
                     hasAtLeastOneMove = true;
                     break;
@@ -123,15 +139,26 @@ public class BoardManager : MonoBehaviour
         // Do not select the piece if it cannot move
         if (!hasAtLeastOneMove)
         {
+            UnselectPiece();
             return;
         }
 
         // Set selected piece
         selectedPiece = Board[x, y];
+        allowedMoves = Board[x, y].PossibleMove();
+
+        BoardHighlight.Instance.HideHighlights();
 
         // Enable highlights
         BoardHighlight.Instance.HighlightSelectedTile(x, y);
         BoardHighlight.Instance.HighlightAllowedMoves(allowedMoves);
+    }
+
+    private void UnselectPiece()
+    {
+        selectedPiece = null;
+        allowedMoves = null;
+        BoardHighlight.Instance.HideHighlights();
     }
 
     private void MovePiece(int x, int y)
@@ -151,9 +178,9 @@ public class BoardManager : MonoBehaviour
             Board[x, y] = selectedPiece;
 
             // Check if the king has moved to the corner
-            if(selectedPiece.isKing)
+            if (selectedPiece.isKing)
             {
-                if((selectedPiece.CurrentX == 0 || selectedPiece.CurrentX == BOARD_SIZE - 1) && (selectedPiece.CurrentY == 0 || selectedPiece.CurrentY == BOARD_SIZE - 1))
+                if ((selectedPiece.CurrentX == 0 || selectedPiece.CurrentX == BOARD_SIZE - 1) && (selectedPiece.CurrentY == 0 || selectedPiece.CurrentY == BOARD_SIZE - 1))
                 {
                     // King has reached the corner
                     // Attacking wins
@@ -174,12 +201,6 @@ public class BoardManager : MonoBehaviour
 
     private void UpdateBoard()
     {
-        // TODO
-        // Redo this updateBoard method
-        // keep it in this method, but simplify it
-        // Move king surrounded check into move function as well
-
-        Piece a, b, c, d, e;
         int attackingCount = 0, defendingCount = 0;
 
         // Loop through the board
@@ -199,124 +220,15 @@ public class BoardManager : MonoBehaviour
                         defendingCount++;
                     }
                 }
-
-                // Pointer to current tile
-                e = Board[x, y];
-
-                // Only bother to check if the cell contains a piece 
-                if (e != null)
-                {
-                    // Check the 3x3 around the piece
-                    if (y > 0 && x > 0 && y < BOARD_SIZE - 1 && x < BOARD_SIZE - 1)
-                    {
-                        a = Board[x - 1, y];
-                        b = Board[x + 1, y];
-                        c = Board[x, y - 1];
-                        d = Board[x, y + 1];
-
-                        // Check if the king is surrounded on all four sides (can't move)
-                        if (e.isKing)
-                        {
-                            if (a != null && b != null && c != null && d != null)
-                            {
-                                if (e.isKing && !a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
-                                {
-                                    // Surrounded on all sides
-                                    // Defending wins 
-                                    EndGame(false);
-                                }
-                            }
-                        }
-                    }
-                    // The piece is at the edge of the board
-                    // Check if it is pinned by a piece from the other team
-                    else
-                    {
-                        // Horizontal
-                        if (x == 0)
-                        {
-                            if (e.isKing)
-                            {
-                                a = Board[x + 1, y];
-                                b = Board[x, y - 1];
-                                c = Board[x, y + 1];
-
-                                if (a != null && b != null && c != null)
-                                {
-                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
-                                    {
-                                        // Surrounded on all sides
-                                        // Defending wins 
-                                        EndGame(false);
-                                    }
-                                }
-                            }
-
-                        }
-                        else if (x == BOARD_SIZE - 1)
-                        {
-                            if (e.isKing)
-                            {
-                                a = Board[x - 1, y];
-                                b = Board[x, y - 1];
-                                c = Board[x, y + 1];
-
-                                if (a != null && b != null && c != null)
-                                {
-                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
-                                    {
-                                        // Surrounded on all sides
-                                        // Defending wins 
-                                        EndGame(false);
-                                    }
-                                }
-                            }
-                        }
-
-                        // Vertical 
-                        if (y == 0)
-                        {
-                            if (e.isKing)
-                            {
-                                a = Board[x, y + 1];
-                                b = Board[x + 1, y];
-                                c = Board[x - 1, y];
-
-                                if (a != null && b != null && c != null)
-                                {
-                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
-                                    {
-                                        // Surrounded on all sides
-                                        // Defending wins 
-                                        EndGame(false);
-                                    }
-                                }
-                            }
-                        }
-                        else if (y == BOARD_SIZE - 1)
-                        {
-                            if (e.isKing)
-                            {
-                                a = Board[x, y - 1];
-                                b = Board[x + 1, y];
-                                c = Board[x - 1, y];
-
-                                if (a != null && b != null && c != null)
-                                {
-                                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
-                                    {
-                                        // Surrounded on all sides
-                                        // Defending wins 
-                                        EndGame(false);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
-
+        
+        if(KingIsTrapped())
+        {
+            // Surrounded on all sides
+            // Defending wins 
+            EndGame(false);
+        }
 
         if (attackingCount < 2)
         {
@@ -331,35 +243,101 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    private bool KingIsTrapped(Piece start, int x, int y)
+    private bool KingIsTrapped()
     {
-        // TODO in progress
-
-        if (start != null)
+        // Initialise king
+        if (king == null)
         {
-            if (!start.isAttacking)
+            for (int y = 0; y < BOARD_SIZE; y++)
             {
-                if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
+                for (int x = 0; x < BOARD_SIZE; x++)
                 {
-                    Piece a, b, c, d;
-
-                    // Not on the edge
-                    if (x >= 1 && x < BOARD_SIZE - 1 && y >= 1 && y < BOARD_SIZE - 1)
+                    if (Board[x, y] != null)
                     {
-                        a = Board[x - 1, y];
-                        b = Board[x + 1, y];
-                        c = Board[x, y - 1];
-                        d = Board[x, y + 1];
-
+                        if (Board[x, y].isKing)
+                        {
+                            king = Board[x, y];
+                            break;
+                        }
                     }
-                    else
-                    {
+                }
+            }
+        }
+        // Reference to nearby pieces 
+        Piece a, b, c, d;
 
+        // Not at the edge
+        if (king.CurrentX > 0 && king.CurrentX < BOARD_SIZE - 1 && king.CurrentY > 0 && king.CurrentY < BOARD_SIZE - 1)
+        {
+            // Check all four directions
+            a = Board[king.CurrentX - 1, king.CurrentY];
+            b = Board[king.CurrentX + 1, king.CurrentY];
+            c = Board[king.CurrentX, king.CurrentY - 1];
+            d = Board[king.CurrentX, king.CurrentY + 1];
+
+            if (a != null && b != null && c != null && d != null)
+            {
+                if (!a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
+                {
+                    // King is surrounded 
+                    return true;
+                }
+            }
+        }
+        // At the edge
+        else
+        {
+            // X axis
+            if (king.CurrentX == 0 || king.CurrentX == BOARD_SIZE - 1)
+            {
+                if (king.CurrentX == 0)
+                {
+                    a = Board[king.CurrentX + 1, king.CurrentY];
+                }
+                else
+                {
+                    a = Board[king.CurrentX - 1, king.CurrentY];
+
+                }
+                b = Board[king.CurrentX, king.CurrentY - 1];
+                c = Board[king.CurrentX, king.CurrentY + 1];
+
+                if (a != null && b != null && c != null)
+                {
+                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
+                    {
+                        // King is surrounded 
+                        return true;
+                    }
+                }
+
+            }
+            // Y axis
+            if (king.CurrentY == 0 || king.CurrentY == BOARD_SIZE - 1)
+            {
+                if (king.CurrentY == 0)
+                {
+                    a = Board[king.CurrentX, king.CurrentY + 1];
+                }
+                else
+                {
+                    a = Board[king.CurrentX, king.CurrentY - 1];
+                }
+                b = Board[king.CurrentX - 1, king.CurrentY];
+                c = Board[king.CurrentX + 1, king.CurrentY];
+
+                if (a != null && b != null && c != null)
+                {
+                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
+                    {
+                        // King is surrounded 
+                        return true;
                     }
                 }
             }
         }
 
+        // If we get here then the king is not trapped 
         return false;
     }
 
@@ -581,70 +559,70 @@ public class BoardManager : MonoBehaviour
         Board = new Piece[BOARD_SIZE, BOARD_SIZE];
 
         // Spawn the black pieces
-        SpawnPiece(0, 0, (BOARD_SIZE / 2) - 1);
-        SpawnPiece(0, 0, BOARD_SIZE / 2);
-        SpawnPiece(0, 0, (BOARD_SIZE / 2) + 1);
-        SpawnPiece(0, 1, BOARD_SIZE / 2);
+        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 1);
+        SpawnPiece(defendingPrefab, 0, BOARD_SIZE / 2);
+        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 1);
+        SpawnPiece(defendingPrefab, 1, BOARD_SIZE / 2);
 
-        SpawnPiece(0, (BOARD_SIZE / 2) - 1, 0);
-        SpawnPiece(0, BOARD_SIZE / 2, 0);
-        SpawnPiece(0, (BOARD_SIZE / 2) + 1, 0);
-        SpawnPiece(0, BOARD_SIZE / 2, 1);
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 1, 0);
+        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, 0);
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 1, 0);
+        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, 1);
 
-        SpawnPiece(0, (BOARD_SIZE / 2) - 1, BOARD_SIZE - 1);
-        SpawnPiece(0, BOARD_SIZE / 2, BOARD_SIZE - 1);
-        SpawnPiece(0, (BOARD_SIZE / 2) + 1, BOARD_SIZE - 1);
-        SpawnPiece(0, BOARD_SIZE / 2, BOARD_SIZE - 2);
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 1, BOARD_SIZE - 1);
+        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, BOARD_SIZE - 1);
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 1, BOARD_SIZE - 1);
+        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, BOARD_SIZE - 2);
 
-        SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 1);
-        SpawnPiece(0, BOARD_SIZE - 1, BOARD_SIZE / 2);
-        SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 1);
-        SpawnPiece(0, BOARD_SIZE - 2, BOARD_SIZE / 2);
+        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 1);
+        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, BOARD_SIZE / 2);
+        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 1);
+        SpawnPiece(defendingPrefab, BOARD_SIZE - 2, BOARD_SIZE / 2);
 
         if (BOARD_SIZE >= 11)
         {
-            SpawnPiece(0, 0, (BOARD_SIZE / 2) - 2);
-            SpawnPiece(0, 0, (BOARD_SIZE / 2) + 2);
+            SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 2);
+            SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 2);
 
-            SpawnPiece(0, (BOARD_SIZE / 2) - 2, 0);
-            SpawnPiece(0, (BOARD_SIZE / 2) + 2, 0);
+            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, 0);
+            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, 0);
 
-            SpawnPiece(0, (BOARD_SIZE / 2) - 2, BOARD_SIZE - 1);
-            SpawnPiece(0, (BOARD_SIZE / 2) + 2, BOARD_SIZE - 1);
+            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE - 1);
+            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE - 1);
 
-            SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 2);
-            SpawnPiece(0, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 2);
+            SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 2);
+            SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 2);
         }
 
         // Spawn the white pieces
-        SpawnPiece(1, (BOARD_SIZE / 2) - 2, BOARD_SIZE / 2);
-        SpawnPiece(1, (BOARD_SIZE / 2) - 1, BOARD_SIZE / 2);
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE / 2);
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, BOARD_SIZE / 2);
 
-        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 2);
-        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 1);
+        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 2);
+        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 1);
 
-        SpawnPiece(1, (BOARD_SIZE / 2) + 2, BOARD_SIZE / 2);
-        SpawnPiece(1, (BOARD_SIZE / 2) + 1, BOARD_SIZE / 2);
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE / 2);
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, BOARD_SIZE / 2);
 
-        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 2);
-        SpawnPiece(1, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 1);
+        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 2);
+        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 1);
 
         if (BOARD_SIZE >= 11)
         {
             // Add in the corners 
-            SpawnPiece(1, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
-            SpawnPiece(1, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) - 1);
-            SpawnPiece(1, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) + 1);
-            SpawnPiece(1, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) + 1);
+            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
+            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) - 1);
+            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) + 1);
+            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) + 1);
         }
 
         // Spawn the king 
-        SpawnPiece(2, BOARD_SIZE / 2, BOARD_SIZE / 2);
+        SpawnPiece(kingPrefab, BOARD_SIZE / 2, BOARD_SIZE / 2);
     }
 
-    private void SpawnPiece(int index, int x, int y)
+    private void SpawnPiece(GameObject o, int x, int y)
     {
-        GameObject go = Instantiate(gamePiecePrefabs[index], GetTileCentre(x, y), Quaternion.identity) as GameObject;
+        GameObject go = Instantiate(o, GetTileCentre(x, y), Quaternion.identity) as GameObject;
         go.transform.SetParent(transform.Find("GamePieces"));
 
         Board[x, y] = go.GetComponent<Piece>();
@@ -671,7 +649,6 @@ public class BoardManager : MonoBehaviour
             // Raycast from mouse point to the plane
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25.0f, LayerMask.GetMask("BoardPlane")))
             {
-
                 // Get the x and y tile position
                 selectionX = (int)hit.point.x;
                 selectionY = (int)hit.point.z;

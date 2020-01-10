@@ -150,10 +150,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5f50dd3e4d76964280f469d7eca3be8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gamePiecePrefabs:
-  - {fileID: 7636100961166422067, guid: b8b6fb2b052f8ef47bf3c4b672500049, type: 3}
-  - {fileID: 1341001715091714310, guid: d6b8baadcff30724dbd616662dd66d27, type: 3}
-  - {fileID: 7495002529813905058, guid: 7a39efb83939ae14abd2e442bde44833, type: 3}
+  defendingPrefab: {fileID: 7636100961166422067, guid: b8b6fb2b052f8ef47bf3c4b672500049,
+    type: 3}
+  attackingPrefab: {fileID: 1341001715091714310, guid: d6b8baadcff30724dbd616662dd66d27,
+    type: 3}
+  kingPrefab: {fileID: 7495002529813905058, guid: 7a39efb83939ae14abd2e442bde44833,
+    type: 3}
   gameTilePrefabs:
   - {fileID: 7361385657526672423, guid: 9f062403faeb37a4daf8d3faf51834f3, type: 3}
   - {fileID: 7361385657526672423, guid: 70812601d5aeaf449bfc6664c0efbc60, type: 3}
@@ -194,11 +196,11 @@ MonoBehaviour:
     type: 3}
   pieceToRemovePrefab: {fileID: 5462941529662686077, guid: e08e7e366079b2c41821eb1d1aa10f36,
     type: 3}
-  defendingHighlightPrefab: {fileID: 3725232881663881239, guid: 1563cfba402c32a48945ab2199b7f858,
+  defendingPrefab: {fileID: 3725232881663881239, guid: 1563cfba402c32a48945ab2199b7f858,
     type: 3}
-  attackingHighlightPrefab: {fileID: 4745625508159190940, guid: 1740dffbaf981d64295d9b9bb7b4b0b2,
+  attackingPrefab: {fileID: 4745625508159190940, guid: 1740dffbaf981d64295d9b9bb7b4b0b2,
     type: 3}
-  kingHighlightPrefab: {fileID: 4817167372568489241, guid: 6ed3bb996c075b64aae06d7ea03c00db,
+  kingPrefab: {fileID: 4817167372568489241, guid: 6ed3bb996c075b64aae06d7ea03c00db,
     type: 3}
 --- !u!1 &635267242
 GameObject:
