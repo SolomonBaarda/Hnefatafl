@@ -394,9 +394,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: -0.6032361, y: 0.02773568, z: -0.02100243, w: -0.79680353}
   m_Size:
-    m_Target: 16.228529
+    m_Target: 19.157667
     speed: 2
-    m_Value: 16.228529
+    m_Value: 19.157667
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -529,7 +529,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: 
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -788,7 +788,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 76fbffff
+      m_ExpandedIDs: fef0ffff76fbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
