@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class BoardManager : MonoBehaviour
 {
@@ -7,12 +8,14 @@ public class BoardManager : MonoBehaviour
     private bool[,] allowedMoves { set; get; }
 
     public Piece[,] Board { set; get; }
+    private List<GameObject> activePieces;
     private Piece selectedPiece;
 
     public const float TILE_SIZE = 1.0f;
     private const float TILE_OFFSET = 0.5f;
-
     public const int BOARD_SIZE = 11;
+
+    public bool isAttackingTurn;
 
     private int selectionX = -1;
     private int selectionY = -1;
@@ -22,12 +25,11 @@ public class BoardManager : MonoBehaviour
     public GameObject defendingPrefab;
     public GameObject attackingPrefab;
     public GameObject kingPrefab;
-    private List<GameObject> activePieces;
     public List<GameObject> gameTilePrefabs;
-
-    public bool isAttackingTurn;
-
     private Piece king;
+
+    public UnityEvent OnAttackingWin;
+    public UnityEvent OnDefendingWin;
 
     private void Start()
     {
@@ -512,7 +514,6 @@ public class BoardManager : MonoBehaviour
         Board[x, y] = null;
         activePieces.Remove(a.gameObject);
         Destroy(a.gameObject);
-
     }
 
     private void SetBoardPlane()
@@ -553,7 +554,6 @@ public class BoardManager : MonoBehaviour
 
     private void SpawnAllPieces()
     {
-        // Index 0: defending, 1: attacking, 2: king
         activePieces = new List<GameObject>();
 
         Board = new Piece[BOARD_SIZE, BOARD_SIZE];
@@ -699,13 +699,21 @@ public class BoardManager : MonoBehaviour
     {
         if (attackingTeamWon)
         {
-            Debug.Log("Attacking team wins!");
+            OnAttackingWin.Invoke();
+            print("Attacking won");
         }
         else
         {
-            Debug.Log("Defending team wins!");
+            OnDefendingWin.Invoke();
+            print("Defending won");
         }
 
+        ResetGame();
+    }
+
+
+    public void ResetGame()
+    {
         foreach (GameObject go in activePieces)
         {
             Destroy(go);

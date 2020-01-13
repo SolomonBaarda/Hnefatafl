@@ -84,7 +84,7 @@ public class BoardHighlight : MonoBehaviour
 
                 // Set it active
                 go.SetActive(true);
-                go.transform.position = new Vector3(p.CurrentX, 0.01f, p.CurrentY);
+                go.transform.position = new Vector3(p.CurrentX, 0, p.CurrentY);
             }
         }
 
