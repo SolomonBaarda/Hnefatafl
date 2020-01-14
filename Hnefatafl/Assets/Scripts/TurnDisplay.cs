@@ -8,11 +8,11 @@ public class TurnDisplay : MonoBehaviour
     public Text turn;
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         string team;
         Color colour;
-        if(BoardManager.Instance.isAttackingTurn)
+        if (BoardManager.Instance.isAttackingTurn)
         {
             team = "Attacking";
             colour = Color.white;

@@ -16,6 +16,7 @@ public class BoardManager : MonoBehaviour
     public const int BOARD_SIZE = 11;
 
     public bool isAttackingTurn;
+    private bool isGameOver;
 
     private int selectionX = -1;
     private int selectionY = -1;
@@ -28,12 +29,14 @@ public class BoardManager : MonoBehaviour
     public List<GameObject> gameTilePrefabs;
     private Piece king;
 
-    public UnityEvent OnAttackingWin;
-    public UnityEvent OnDefendingWin;
+    public UnityEvent OnGameOver = new UnityEvent();
+    public UnityEvent OnAttackingWin = new UnityEvent();
+    public UnityEvent OnDefendingWin = new UnityEvent();
 
     private void Start()
     {
         isAttackingTurn = true;
+        isGameOver = false;
         Instance = this;
 
         CreateBoard();
@@ -43,64 +46,67 @@ public class BoardManager : MonoBehaviour
 
     private void Update()
     {
-        UpdateTileSelection();
-        DrawBoard();
-
-        // Left click
-        if (Input.GetMouseButtonDown(0))
+        if (!isGameOver)
         {
-            if (selectionX >= 0 && selectionY >= 0 && selectionX < BOARD_SIZE && selectionY < BOARD_SIZE)
-            {
-                bool firstClick = false;
+            UpdateTileSelection();
+            DrawBoard();
 
-                // Select new piece
-                if (Board[selectionX, selectionY] != null)
+            // Left click
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (selectionX >= 0 && selectionY >= 0 && selectionX < BOARD_SIZE && selectionY < BOARD_SIZE)
                 {
-                    if(selectedPiece == null || selectedPiece != Board[selectionX, selectionY])
+                    bool firstClick = false;
+
+                    // Select new piece
+                    if (Board[selectionX, selectionY] != null)
                     {
-                        SelectPiece(selectionX, selectionY);
-                        firstClick = true;
+                        if (selectedPiece == null || selectedPiece != Board[selectionX, selectionY])
+                        {
+                            SelectPiece(selectionX, selectionY);
+                            firstClick = true;
+                        }
+
                     }
 
-                }
-
-                if(!firstClick)
-                {
-                    // Move it if there is one selected
-                    if (selectedPiece != null)
+                    if (!firstClick)
                     {
-                        // Move the piece
-                        MovePiece(selectionX, selectionY);
+                        // Move it if there is one selected
+                        if (selectedPiece != null)
+                        {
+                            // Move the piece
+                            MovePiece(selectionX, selectionY);
+                        }
                     }
                 }
             }
-        }
 
-        // Do the highlights for hovering 
-        if (selectedPiece != null)
-        {
-            if (selectionX >= 0 && selectionX < BOARD_SIZE && selectionY >= 0 && selectionY < BOARD_SIZE)
+            // Do the highlights for hovering 
+            if (selectedPiece != null)
             {
-                if (allowedMoves[selectionX, selectionY])
+                if (selectionX >= 0 && selectionX < BOARD_SIZE && selectionY >= 0 && selectionY < BOARD_SIZE)
                 {
-                    // New hover piece has been selected
-                    if (selectionX != validHoverX || selectionY != validHoverY)
+                    if (allowedMoves[selectionX, selectionY])
                     {
-                        // Set the currently shown hover tile
-                        validHoverX = selectionX;
-                        validHoverY = selectionY;
+                        // New hover piece has been selected
+                        if (selectionX != validHoverX || selectionY != validHoverY)
+                        {
+                            // Set the currently shown hover tile
+                            validHoverX = selectionX;
+                            validHoverY = selectionY;
 
-                        // Display the highlights 
-                        BoardHighlight.Instance.HighlightPiecesToRemove(TilesToRemove(selectedPiece, selectionX, selectionY));
-                        BoardHighlight.Instance.HighlightHoverTile(selectedPiece, selectionX, selectionY);
+                            // Display the highlights 
+                            BoardHighlight.Instance.HighlightPiecesToRemove(TilesToRemove(selectedPiece, selectionX, selectionY));
+                            BoardHighlight.Instance.HighlightHoverTile(selectedPiece, selectionX, selectionY);
+                        }
+                        return;
+
                     }
-                    return;
-
+                    // If we get here, the cell being hovered over is not valid, so reset the values and hide the highlight 
+                    validHoverX = -1;
+                    validHoverY = -1;
+                    BoardHighlight.Instance.HideHoverHighlight();
                 }
-                // If we get here, the cell being hovered over is not valid, so reset the values and hide the highlight 
-                validHoverX = -1;
-                validHoverY = -1;
-                BoardHighlight.Instance.HideHoverHighlight();
             }
         }
 
@@ -224,8 +230,8 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
-        
-        if(KingIsTrapped())
+
+        if (KingIsTrapped())
         {
             // Surrounded on all sides
             // Defending wins 
@@ -507,7 +513,6 @@ public class BoardManager : MonoBehaviour
 
     }
 
-
     private void Kill(int x, int y)
     {
         Piece a = Board[x, y];
@@ -697,18 +702,20 @@ public class BoardManager : MonoBehaviour
 
     private void EndGame(bool attackingTeamWon)
     {
+        isGameOver = true;
+
         if (attackingTeamWon)
         {
             OnAttackingWin.Invoke();
-            print("Attacking won");
+            Debug.Log("Attacking team won.");
         }
         else
         {
             OnDefendingWin.Invoke();
-            print("Defending won");
+            Debug.Log("Defending team won.");
         }
 
-        ResetGame();
+        OnGameOver.Invoke();
     }
 
 
@@ -719,9 +726,13 @@ public class BoardManager : MonoBehaviour
             Destroy(go);
         }
 
-        isAttackingTurn = true;
         BoardHighlight.Instance.HideHighlights();
         SpawnAllPieces();
+        isAttackingTurn = true;
+        isGameOver = false;
+
+        Debug.Log("Game has been reset.");
     }
+
 
 }

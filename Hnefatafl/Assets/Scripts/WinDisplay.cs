@@ -8,21 +8,19 @@ public class WinDisplay : MonoBehaviour
 {
     public Text message;
 
-    public void Start()
+    private void Start()
     {
         message.enabled = false;
     }
 
-    
-
     public void DisplayAttackingWon()
     {
-        DisplayWon("Attacking", Color.white);
+        StartCoroutine(DisplayWon("Attacking", Color.white));
     }
 
     public void DisplayDefendingWon()
     {
-        DisplayWon("Defending", Color.black);
+        StartCoroutine(DisplayWon("Defending", Color.black));
     }
 
     private IEnumerator DisplayWon(string team, Color colour)
