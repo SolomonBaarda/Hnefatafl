@@ -8,7 +8,7 @@ public class King : Piece
     public override bool[,] PossibleMove()
     {
         // Array of valid moves for the piece 
-        bool[,] r = new bool[BoardManager.BOARD_SIZE, BoardManager.BOARD_SIZE];
+        bool[,] r = new bool[BoardManager.Instance.BOARD_SIZE, BoardManager.Instance.BOARD_SIZE];
 
         Piece p;
 
@@ -18,7 +18,7 @@ public class King : Piece
             for(int x = CurrentX - 1; x <= CurrentX + 1; x++)
             {
                 // Ensure within the board
-                if(x >= 0 && x < BoardManager.BOARD_SIZE && y >= 0 && y < BoardManager.BOARD_SIZE)
+                if(x >= 0 && x < BoardManager.Instance.BOARD_SIZE && y >= 0 && y < BoardManager.Instance.BOARD_SIZE)
                 {
                     if (x == CurrentX || y == CurrentY)
                     {

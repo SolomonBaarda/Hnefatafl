@@ -18,11 +18,10 @@ public class Piece : MonoBehaviour
         this.CurrentY = y;
     }
 
-
     public virtual bool[,] PossibleMove()
     {
         // Array of valid moves for the piece 
-        bool[,] r = new bool[BoardManager.BOARD_SIZE, BoardManager.BOARD_SIZE];
+        bool[,] r = new bool[BoardManager.Instance.BOARD_SIZE, BoardManager.Instance.BOARD_SIZE];
 
         CheckPossibleMoveXAxis(+1, ref r);
         CheckPossibleMoveXAxis(-1, ref r);
@@ -31,9 +30,9 @@ public class Piece : MonoBehaviour
 
         // Pieces are never allowed to move to the corners
         r[0, 0] = false;
-        r[0, BoardManager.BOARD_SIZE - 1] = false;
-        r[BoardManager.BOARD_SIZE - 1, 0] = false;
-        r[BoardManager.BOARD_SIZE - 1, BoardManager.BOARD_SIZE - 1] = false;
+        r[0, BoardManager.Instance.BOARD_SIZE - 1] = false;
+        r[BoardManager.Instance.BOARD_SIZE - 1, 0] = false;
+        r[BoardManager.Instance.BOARD_SIZE - 1, BoardManager.Instance.BOARD_SIZE - 1] = false;
 
         return r;
     }
@@ -49,7 +48,7 @@ public class Piece : MonoBehaviour
         {
             x += direction;
             // Break out if not valid
-            if(x < 0 || x >= BoardManager.BOARD_SIZE)
+            if(x < 0 || x >= BoardManager.Instance.BOARD_SIZE)
             {
                 break;
             }
@@ -63,7 +62,7 @@ public class Piece : MonoBehaviour
             else
             {
                 // At the edge (only check one direction)
-                if(CurrentY == 0 || CurrentY == BoardManager.BOARD_SIZE - 1)
+                if(CurrentY == 0 || CurrentY == BoardManager.Instance.BOARD_SIZE - 1)
                 {
                     if(CurrentY == 0)
                     {
@@ -116,7 +115,7 @@ public class Piece : MonoBehaviour
         {
             y += direction;
             // Break out if not valid
-            if (y < 0 || y >= BoardManager.BOARD_SIZE)
+            if (y < 0 || y >= BoardManager.Instance.BOARD_SIZE)
             {
                 break;
             }
@@ -130,7 +129,7 @@ public class Piece : MonoBehaviour
             else
             {
                 // At the edge (only check one direction)
-                if (CurrentX == 0 || CurrentX == BoardManager.BOARD_SIZE - 1)
+                if (CurrentX == 0 || CurrentX == BoardManager.Instance.BOARD_SIZE - 1)
                 {
                     if (CurrentX == 0)
                     {

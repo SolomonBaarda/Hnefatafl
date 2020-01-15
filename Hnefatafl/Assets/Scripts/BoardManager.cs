@@ -13,7 +13,7 @@ public class BoardManager : MonoBehaviour
 
     public const float TILE_SIZE = 1.0f;
     private const float TILE_OFFSET = 0.5f;
-    public const int BOARD_SIZE = 11;
+    public int BOARD_SIZE = 11;
 
     public bool isAttackingTurn;
     private bool isGameOver;
@@ -33,11 +33,33 @@ public class BoardManager : MonoBehaviour
     public UnityEvent OnAttackingWin = new UnityEvent();
     public UnityEvent OnDefendingWin = new UnityEvent();
 
+    private GameMode gameMode; 
+
+    public enum GameMode
+    {
+        Hnefatafl,
+        Tablut,
+    }
+
     private void Start()
+    {
+        Instance = this;
+        Initialise();
+    }
+
+    private void Initialise()
     {
         isAttackingTurn = true;
         isGameOver = false;
-        Instance = this;
+
+        if(gameMode.Equals(GameMode.Tablut))
+        {
+            BOARD_SIZE = 9;
+        }
+        else
+        {
+            BOARD_SIZE = 11;
+        }
 
         CreateBoard();
         SetBoardPlane();
@@ -523,7 +545,7 @@ public class BoardManager : MonoBehaviour
 
     private void SetBoardPlane()
     {
-        GameObject plane = GameObject.Find("BoardPlane");
+        GameObject plane = GameObject.FindWithTag("BoardPlane");
         // Set the scale to fit the current board size
         plane.transform.localScale = new Vector3(BOARD_SIZE * 0.1f, 1, BOARD_SIZE * 0.1f);
         // Move the plane so that it is in the centre of the board
@@ -732,6 +754,13 @@ public class BoardManager : MonoBehaviour
         isGameOver = false;
 
         Debug.Log("Game has been reset.");
+    }
+
+
+    public void SelectGamemode(GameMode mode)
+    {
+        gameMode = mode;
+        Initialise();
     }
 
 

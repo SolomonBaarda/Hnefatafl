@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using TMPro;
 
 public class WinDisplay : MonoBehaviour
 {
-    public Text message;
+    public TMP_Text message;
 
     private void Start()
     {
@@ -15,18 +16,20 @@ public class WinDisplay : MonoBehaviour
 
     public void DisplayAttackingWon()
     {
-        StartCoroutine(DisplayWon("Attacking", Color.white));
+        StartCoroutine(DisplayWon("Attackers", Color.white, Color.black));
     }
 
     public void DisplayDefendingWon()
     {
-        StartCoroutine(DisplayWon("Defending", Color.black));
+        StartCoroutine(DisplayWon("Defenders", Color.black, Color.white));
     }
 
-    private IEnumerator DisplayWon(string team, Color colour)
+    private IEnumerator DisplayWon(string team, Color colour, Color outline)
     {
-        message.text = team + " team has won";
+        message.text = team + " have won!";
         message.color = colour;
+        message.outlineWidth = 0.25f;
+        message.outlineColor = outline;
         message.enabled = true;
 
         yield return new WaitForSeconds(2);

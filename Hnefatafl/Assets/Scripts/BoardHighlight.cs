@@ -42,9 +42,9 @@ public class BoardHighlight : MonoBehaviour
     public void HighlightAllowedMoves(bool[,] moves)
     {
         // Loop though all tiles
-        for (int y = 0; y < BoardManager.BOARD_SIZE; y++)
+        for (int y = 0; y < BoardManager.Instance.BOARD_SIZE; y++)
         {
-            for (int x = 0; x < BoardManager.BOARD_SIZE; x++)
+            for (int x = 0; x < BoardManager.Instance.BOARD_SIZE; x++)
             {
                 // If the tile should be highlighted
                 if (moves[x, y])
@@ -95,7 +95,7 @@ public class BoardHighlight : MonoBehaviour
     {
         if (selected != null)
         {
-            if (hoverX >= 0 && hoverX < BoardManager.BOARD_SIZE && hoverY >= 0 && hoverY < BoardManager.BOARD_SIZE)
+            if (hoverX >= 0 && hoverX < BoardManager.Instance.BOARD_SIZE && hoverY >= 0 && hoverY < BoardManager.Instance.BOARD_SIZE)
             {
                 // Set the correct prefab
                 GameObject hover;

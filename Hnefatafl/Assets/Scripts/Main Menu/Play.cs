@@ -7,10 +7,19 @@ public class Play : MonoBehaviour
 {
     public void PlayHnefatafl()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        LoadGame();
+
+        // Set the scene
+        BoardManager.Instance.SelectGamemode(BoardManager.GameMode.Hnefatafl);
     }
 
     public void PlayTablut()
+    {
+        LoadGame();
+        BoardManager.Instance.SelectGamemode(BoardManager.GameMode.Tablut);
+    }
+
+    private void LoadGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
