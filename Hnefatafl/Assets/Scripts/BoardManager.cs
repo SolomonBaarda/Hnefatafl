@@ -12,11 +12,12 @@ public class BoardManager : MonoBehaviour
     private Piece selectedPiece;
 
     public const float TILE_SIZE = 1.0f;
-    private const float TILE_OFFSET = 0.5f;
+    public const float TILE_OFFSET = 0.5f;
     public int BOARD_SIZE = 11;
 
     public bool isAttackingTurn;
     private bool isGameOver;
+    public GameMode gameMode;
 
     private int selectionX = -1;
     private int selectionY = -1;
@@ -33,8 +34,6 @@ public class BoardManager : MonoBehaviour
     public UnityEvent OnAttackingWin = new UnityEvent();
     public UnityEvent OnDefendingWin = new UnityEvent();
 
-    private GameMode gameMode; 
-
     public enum GameMode
     {
         Hnefatafl,
@@ -44,10 +43,10 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         Instance = this;
-        Initialise();
+        LoadGame();
     }
 
-    private void Initialise()
+    public void LoadGame()
     {
         isAttackingTurn = true;
         isGameOver = false;
@@ -756,12 +755,6 @@ public class BoardManager : MonoBehaviour
         Debug.Log("Game has been reset.");
     }
 
-
-    public void SelectGamemode(GameMode mode)
-    {
-        gameMode = mode;
-        Initialise();
-    }
 
 
 }
