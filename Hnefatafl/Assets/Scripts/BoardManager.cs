@@ -57,7 +57,7 @@ public class BoardManager : MonoBehaviour
         }
         else
         {
-            BOARD_SIZE = 11;
+            BOARD_SIZE = 13;
         }
 
         CreateBoard();

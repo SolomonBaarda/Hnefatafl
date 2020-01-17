@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class RotatingCamera : MonoBehaviour
 {
-    public float lookSpeed = 50f;
+    public float lookSpeedX = 25f;
+    public float lookSpeedY = 25f;
     public int maxOffset = 30;
     public Vector3 defaultView = new Vector3(90, 0, 0);
 
@@ -21,9 +22,9 @@ public class RotatingCamera : MonoBehaviour
         // Update view if the player is looking around
         if (Input.GetMouseButton(1))
         {
-            float h = lookSpeed * Input.GetAxis("Mouse X") * Time.deltaTime;
-            float v = lookSpeed * Input.GetAxis("Mouse Y") * Time.deltaTime;
-            transform.Rotate(h, v, 0f);
+            float x = lookSpeedX * Input.GetAxisRaw("Mouse X") * Time.deltaTime;
+            float y = lookSpeedY * Input.GetAxisRaw("Mouse Y") * Time.deltaTime;
+            transform.Rotate(-y, x, 0f);
 
             Vector3 rotation = transform.localRotation.eulerAngles;
             rotation.x = Mathf.Clamp(rotation.x, defaultView.x - maxOffset, defaultView.x + maxOffset);
