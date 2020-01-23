@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
+using System;
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class BoardManager : MonoBehaviour
 {
-    public static BoardManager Instance { set; get; }
+    public static BoardManager Instance { private set; get; }
     private bool[,] allowedMoves { set; get; }
 
-    public Piece[,] Board { set; get; }
+    public Piece[,] Board { private set; get; }
     private List<GameObject> activePieces;
     private Piece selectedPiece;
 
@@ -30,9 +31,7 @@ public class BoardManager : MonoBehaviour
     public List<GameObject> gameTilePrefabs;
     private Piece king;
 
-    public UnityEvent OnGameOver = new UnityEvent();
-    public UnityEvent OnAttackingWin = new UnityEvent();
-    public UnityEvent OnDefendingWin = new UnityEvent();
+    public static event Action<Team> OnGameOver;
 
     public enum GameMode
     {
@@ -40,10 +39,26 @@ public class BoardManager : MonoBehaviour
         Tablut,
     }
 
+    public enum Team
+    {
+        Attacking,
+        Defending,
+    }
+
     private void Start()
     {
         Instance = this;
+
+        LoadHUD();
         LoadGame();
+    }
+
+    public void LoadHUD()
+    {
+        if (!SceneManager.GetSceneByName("HUD").isLoaded)
+        {
+            SceneManager.LoadSceneAsync("HUD", LoadSceneMode.Additive);
+        }
     }
 
     public void LoadGame()
@@ -64,6 +79,10 @@ public class BoardManager : MonoBehaviour
         SetBoardPlane();
         SpawnAllPieces();
     }
+
+
+
+
 
     private void Update()
     {
@@ -727,16 +746,16 @@ public class BoardManager : MonoBehaviour
 
         if (attackingTeamWon)
         {
-            OnAttackingWin.Invoke();
+            OnGameOver.Invoke(Team.Attacking);
             Debug.Log("Attacking team won.");
         }
         else
         {
-            OnDefendingWin.Invoke();
+            OnGameOver.Invoke(Team.Defending);
             Debug.Log("Defending team won.");
         }
 
-        OnGameOver.Invoke();
+        
     }
 
 

@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Tablut.unity
     guid: 79e8ae19bea7a324396486f31cb0fbd5
+  - enabled: 1
+    path: Assets/Scenes/HUD.unity
+    guid: 562d36bc48cff4b499e90e8433911f30
   m_configObjects: {}
