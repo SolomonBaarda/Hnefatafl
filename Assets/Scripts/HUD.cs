@@ -8,7 +8,9 @@ using UnityEngine.Events;
 
 public class HUD : MonoBehaviour
 {
-    public TMP_Text winMessage;
+    public TMP_Text winMessage, turnDisplay;
+    public TMP_Text resetButton, quitButton;
+
 
     public static event Action OnGameQuit;
     public static event Action OnGameReset;
@@ -20,10 +22,15 @@ public class HUD : MonoBehaviour
 
         // Add the GameOver method to the OnGameOver event call
         BoardManager.OnGameOver += GameOver;
+        // Add the turn indicator
+        BoardManager.OnTurnStart += UpdatePlayerTurnDisplay;
         // Add the reset game method to the event
         OnGameReset += BoardManager.Instance.ResetGame;
         // Add the quit to menu method to the event
         OnGameQuit += QuitToMenu;
+
+        SetButton(resetButton, "RESET", Color.white, Color.black, Color.gray, Color.black);
+        //SetButton(quitButton, "X", Color.white, Color.black, Color.gray, Color.black);
     }
 
     public void OnQuitToMenuClicked()
@@ -50,7 +57,6 @@ public class HUD : MonoBehaviour
         UnloadHUD();
     }
 
-
     public void UnloadHUD()
     {
         if (SceneManager.GetSceneByName("HUD").isLoaded)
@@ -67,6 +73,56 @@ public class HUD : MonoBehaviour
         }
     }
 
+    private void SetButton(TMP_Text t, String message, Color colour, Color outline, Color hover, Color pressed)
+    {
+        SetText(t, message, colour, outline);
+
+        Button b = t.GetComponent<Button>();
+        if (b)
+        {
+            // Set the colours here
+            ColorBlock c = ColorBlock.defaultColorBlock;
+            c.normalColor = colour;
+            c.highlightedColor = hover;
+            c.pressedColor = pressed;
+            b.colors = c;
+
+            // Also add the event calls
+            // TODO
+            
+        }
+    }
+
+    private void SetText(TMP_Text t, String message, Color c, Color outline)
+    {
+        // Set the properties and display
+        t.text = message;
+        t.color = c;
+        t.outlineWidth = 0.25f;
+        t.outlineColor = outline;
+        t.enabled = true;
+    }
+
+
+    private void UpdatePlayerTurnDisplay(BoardManager.Team t)
+    {
+        String team;
+        Color colour, outline;
+        if (t.Equals(BoardManager.Team.Attacking))
+        {
+            team = "Attackers";
+            colour = Color.white;
+            outline = Color.black;
+        }
+        else
+        {
+            team = "Defenders";
+            colour = Color.black;
+            outline = Color.white;
+        }
+
+        SetText(turnDisplay, team + " turn", colour, outline);
+    }
 
     private void GameOver(BoardManager.Team team)
     {
@@ -81,15 +137,9 @@ public class HUD : MonoBehaviour
         }
     }
 
-
     private IEnumerator DisplayWon(string team, Color colour, Color outline)
     {
-        // Set the properties and display
-        winMessage.text = team + " have won!";
-        winMessage.color = colour;
-        winMessage.outlineWidth = 0.25f;
-        winMessage.outlineColor = outline;
-        winMessage.enabled = true;
+        SetText(winMessage, team + " have won!", colour, outline);
 
         // Wait 2 seconds then disable the text
         yield return new WaitForSeconds(2);

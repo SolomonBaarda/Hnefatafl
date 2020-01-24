@@ -32,6 +32,7 @@ public class BoardManager : MonoBehaviour
     private Piece king;
 
     public static event Action<Team> OnGameOver;
+    public static event Action<Team> OnTurnStart;
 
     public enum GameMode
     {
@@ -240,11 +241,31 @@ public class BoardManager : MonoBehaviour
             // Will be removed soon
             UpdateBoard();
 
-            isAttackingTurn = !isAttackingTurn;
+            // Update the players turn
+            UpdatePlayerTurn();
         }
 
         BoardHighlight.Instance.HideHighlights();
         selectedPiece = null;
+    }
+
+    private void UpdatePlayerTurn()
+    {
+        // Change the variable
+        isAttackingTurn = !isAttackingTurn;
+
+        Team t;
+        if (isAttackingTurn)
+        {
+            t = Team.Attacking;
+        }
+        else
+        {
+            t = Team.Defending;
+        }
+        // Invoke an event
+        // Used in the HUD
+        OnTurnStart.Invoke(t);
     }
 
     private void UpdateBoard()
