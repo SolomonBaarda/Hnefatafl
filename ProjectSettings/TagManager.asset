@@ -12,6 +12,8 @@ TagManager:
   - HighlightKing
   - HighlightAttacking
   - HighlightDefending
+  - HUDTurnDisplay
+  - HUDGameOverDisplay
   layers:
   - Default
   - TransparentFX
