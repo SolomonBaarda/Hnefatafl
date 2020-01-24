@@ -456,7 +456,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BOARD_SIZE: 11
-  isAttackingTurn: 0
+  isAttackingTurn: 1
   gameMode: 0
   defendingPrefab: {fileID: 7636100961166422067, guid: b8b6fb2b052f8ef47bf3c4b672500049,
     type: 3}

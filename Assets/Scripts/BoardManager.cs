@@ -600,7 +600,6 @@ public class BoardManager : MonoBehaviour
     private void SpawnAllPieces()
     {
         activePieces = new List<GameObject>();
-
         Board = new Piece[BOARD_SIZE, BOARD_SIZE];
 
         // Spawn the black pieces
@@ -669,7 +668,7 @@ public class BoardManager : MonoBehaviour
     {
         GameObject go = Instantiate(o, GetTileCentre(x, y), Quaternion.identity) as GameObject;
         go.transform.SetParent(transform.Find("GamePieces"));
-
+            
         Board[x, y] = go.GetComponent<Piece>();
         Board[x, y].SetPosition(x, y);
 

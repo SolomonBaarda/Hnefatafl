@@ -13,17 +13,17 @@ public class HUD : MonoBehaviour
     public static event Action OnGameQuit;
     public static event Action OnGameReset;
 
-    private void Awake()
+    private void Start()
     {
         // Hide the win text
         winMessage.enabled = false;
 
         // Add the GameOver method to the OnGameOver event call
         BoardManager.OnGameOver += GameOver;
-
+        // Add the reset game method to the event
+        OnGameReset += BoardManager.Instance.ResetGame;
         // Add the quit to menu method to the event
         OnGameQuit += QuitToMenu;
-        OnGameReset += BoardManager.Instance.ResetGame;
     }
 
     public void OnQuitToMenuClicked()
@@ -39,7 +39,7 @@ public class HUD : MonoBehaviour
 
     private void QuitToMenu()
     {
-        HideHUD();
+        UnloadHUD();
 
         // Quit to menu
         SceneManager.LoadScene(0);
@@ -47,19 +47,26 @@ public class HUD : MonoBehaviour
 
     private void OnDestroy()
     {
-        HideHUD();
+        UnloadHUD();
     }
 
 
-
-    public void HideHUD()
+    public void UnloadHUD()
     {
         if (SceneManager.GetSceneByName("HUD").isLoaded)
         {
             Debug.Log("HUD Unloaded");
+
+            // Remove all event calls
+            BoardManager.OnGameOver -= GameOver;
+            OnGameReset -= BoardManager.Instance.ResetGame;
+            OnGameQuit -= QuitToMenu;
+
+            // Unload this scene
             SceneManager.UnloadSceneAsync("HUD");
         }
     }
+
 
     private void GameOver(BoardManager.Team team)
     {
