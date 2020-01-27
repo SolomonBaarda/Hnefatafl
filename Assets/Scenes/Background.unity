@@ -166,7 +166,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!108 &831683055
 Light:
   m_ObjectHideFlags: 0
@@ -359,6 +359,7 @@ MonoBehaviour:
     type: 3}
   table: {fileID: 3131263514877860350, guid: 280ae866e21acff4e8e01594d5b8b66d, type: 3}
   boardVisualThickness: 0.5
+  boardVisualExtraEdge: 5
 --- !u!4 &1900918315
 Transform:
   m_ObjectHideFlags: 0

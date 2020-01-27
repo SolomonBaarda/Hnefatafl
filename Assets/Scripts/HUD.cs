@@ -21,6 +21,7 @@ public class HUD : MonoBehaviour
         BoardManager.OnTurnStart += UpdatePlayerTurnDisplay;
         // Add the reset game method to the event
         OnGameReset += BoardManager.Instance.ResetGame;
+        OnGameReset += ResetHud;
         // Add the quit to menu method to the event
         OnGameQuit += QuitToMenu;
 
@@ -33,6 +34,20 @@ public class HUD : MonoBehaviour
 
         // Hide the win text
         GameObject.FindGameObjectWithTag("HUDGameOverDisplay").GetComponent<TMP_Text>().enabled = false;
+    }
+
+    public void ResetHud()
+    {
+        BoardManager.Team t;
+        if(BoardManager.Instance.isAttackingTurn)
+        {
+            t = BoardManager.Team.Attacking;
+        }
+        else
+        {
+            t = BoardManager.Team.Defending;
+        }
+        UpdatePlayerTurnDisplay(t);
     }
 
     public void OnQuitToMenuClicked()
@@ -65,6 +80,7 @@ public class HUD : MonoBehaviour
             // Remove all event calls
             BoardManager.OnGameOver -= GameOver;
             OnGameReset -= BoardManager.Instance.ResetGame;
+            OnGameReset -= ResetHud;
             OnGameQuit -= QuitToMenu;
             resetButton.GetComponent<Button>().onClick.RemoveAllListeners();
             quitButton.GetComponent<Button>().onClick.RemoveAllListeners();
