@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/HUD.unity
     guid: 562d36bc48cff4b499e90e8433911f30
+  - enabled: 1
+    path: Assets/Scenes/Background.unity
+    guid: ec20e966a94d4444891623a74492c29b
   m_configObjects: {}

@@ -62,8 +62,6 @@ public class HUD : MonoBehaviour
     {
         if (SceneManager.GetSceneByName("HUD").isLoaded)
         {
-            Debug.Log("HUD Unloaded");
-
             // Remove all event calls
             BoardManager.OnGameOver -= GameOver;
             OnGameReset -= BoardManager.Instance.ResetGame;

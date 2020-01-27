@@ -28,7 +28,6 @@ public class BoardManager : MonoBehaviour
     public GameObject defendingPrefab;
     public GameObject attackingPrefab;
     public GameObject kingPrefab;
-    public List<GameObject> gameTilePrefabs;
     private Piece king;
 
     public static event Action<Team> OnGameOver;
@@ -52,6 +51,8 @@ public class BoardManager : MonoBehaviour
 
         LoadHUD();
         LoadGame();
+
+        LoadBackground();
     }
 
     public void LoadHUD()
@@ -59,6 +60,14 @@ public class BoardManager : MonoBehaviour
         if (!SceneManager.GetSceneByName("HUD").isLoaded)
         {
             SceneManager.LoadSceneAsync("HUD", LoadSceneMode.Additive);
+        }
+    }
+
+    public void LoadBackground()
+    {
+        if (!SceneManager.GetSceneByName("Background").isLoaded)
+        {
+            SceneManager.LoadSceneAsync("Background", LoadSceneMode.Additive);
         }
     }
 
@@ -76,7 +85,6 @@ public class BoardManager : MonoBehaviour
             BOARD_SIZE = 13;
         }
 
-        CreateBoard();
         SetBoardPlane();
         SpawnAllPieces();
     }
@@ -591,31 +599,13 @@ public class BoardManager : MonoBehaviour
         plane.transform.position = new Vector3((float)(BOARD_SIZE) / 2, 0, (float)(BOARD_SIZE) / 2);
     }
 
-    private void CreateBoard()
+
+
+    public Vector3 GetBoardPosCentreBottom()
     {
-        // Index 0: regular tile, 1: corners
-        GameObject type;
+        Vector3 centre = GetTileCentre(BOARD_SIZE / 2, BOARD_SIZE / 2);
 
-        for (int y = 0; y < BOARD_SIZE; y++)
-        {
-            for (int x = 0; x < BOARD_SIZE; x++)
-            {
-                // Set corners to different visual
-                if ((x == 0 || x == BOARD_SIZE - 1) && (y == 0 || y == BOARD_SIZE - 1))
-                {
-                    type = gameTilePrefabs[1];
-                }
-                else
-                {
-                    type = gameTilePrefabs[0];
-                }
-
-                // Create the tile
-                GameObject go = Instantiate(type, new Vector3(x, -0.06f, y), Quaternion.identity) as GameObject;
-                go.transform.SetParent(transform.Find("BoardVisual"));
-            }
-        }
-
+        return centre;
     }
 
     private void SpawnAllPieces()
@@ -689,7 +679,7 @@ public class BoardManager : MonoBehaviour
     {
         GameObject go = Instantiate(o, GetTileCentre(x, y), Quaternion.identity) as GameObject;
         go.transform.SetParent(transform.Find("GamePieces"));
-            
+
         Board[x, y] = go.GetComponent<Piece>();
         Board[x, y].SetPosition(x, y);
 

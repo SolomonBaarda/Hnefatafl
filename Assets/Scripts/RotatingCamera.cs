@@ -69,7 +69,8 @@ public class RotatingCamera : MonoBehaviour
         float pos = (int)(BoardManager.Instance.BOARD_SIZE / 2) + BoardManager.TILE_OFFSET;
 
         // Works but need a better method for height
-        float height = (int)(BoardManager.Instance.BOARD_SIZE / 2) + 1;
+        float height = (int)(BoardManager.Instance.BOARD_SIZE / 2) + 3;
+
         // Set the position
         transform.localPosition = new Vector3(pos, height, pos);
     }

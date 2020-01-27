@@ -29,8 +29,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7361385656440786556}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0.5}
-  m_LocalScale: {x: 1, y: 0.1, z: 1}
+  m_LocalPosition: {x: 0.5, y: -0.5, z: 0.5}
+  m_LocalScale: {x: 1, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 7361385657526672422}
   m_RootOrder: 0
@@ -107,7 +107,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7361385657526672422}
   m_Layer: 0
-  m_Name: Tile
+  m_Name: TileCorner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -120,8 +120,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7361385657526672423}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -19.118584, y: 7.42954, z: 12.820572}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7361385656440786552}
@@ -143,7 +143,7 @@ PrefabInstance:
     - target: {fileID: 7703471376042580169, guid: 738dfb8d197dd2b4ba123433d3660b1e,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7703471376042580169, guid: 738dfb8d197dd2b4ba123433d3660b1e,
         type: 3}
@@ -189,6 +189,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7703471376042580169, guid: 738dfb8d197dd2b4ba123433d3660b1e,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7703471376042580173, guid: 738dfb8d197dd2b4ba123433d3660b1e,
         type: 3}
