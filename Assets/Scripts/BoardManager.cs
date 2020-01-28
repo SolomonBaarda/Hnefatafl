@@ -249,8 +249,12 @@ public class BoardManager : MonoBehaviour
             // Will be removed soon
             UpdateBoard();
 
-            // Update the players turn
-            UpdatePlayerTurn();
+            if(!isGameOver)
+            {
+                // Update the players turn
+                UpdatePlayerTurn();
+            }
+
         }
 
         BoardHighlight.Instance.HideHighlights();
