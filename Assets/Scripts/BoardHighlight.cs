@@ -14,6 +14,9 @@ public class BoardHighlight : MonoBehaviour
     public GameObject attackingPrefab;
     public GameObject kingPrefab;
 
+    public float yOffset = 0.01f;
+    public float transparency = 0.5f;
+
     private List<GameObject> highlights;
 
     private void Start()
@@ -54,7 +57,7 @@ public class BoardHighlight : MonoBehaviour
 
                     // Set it active
                     go.SetActive(true);
-                    go.transform.position = new Vector3(x, 0, y);
+                    go.transform.position = new Vector3(x, yOffset, y);
                 }
             }
         }
@@ -67,7 +70,7 @@ public class BoardHighlight : MonoBehaviour
 
         // Set it active
         go.SetActive(true);
-        go.transform.position = new Vector3(tileX, 0, tileY);
+        go.transform.position = new Vector3(tileX, yOffset, tileY);
     }
 
 
@@ -84,7 +87,7 @@ public class BoardHighlight : MonoBehaviour
 
                 // Set it active
                 go.SetActive(true);
-                go.transform.position = new Vector3(p.CurrentX, 0, p.CurrentY);
+                go.transform.position = new Vector3(p.CurrentX, yOffset, p.CurrentY);
             }
         }
 
@@ -118,7 +121,7 @@ public class BoardHighlight : MonoBehaviour
                 hover.SetActive(true);
                 hover.transform.position = new Vector3(hoverX + (BoardManager.TILE_SIZE / 2), 0, hoverY + (BoardManager.TILE_SIZE / 2));
 
-                SetTransparent(hover, 0.5f);
+                SetTransparent(hover, transparency);
                 
                 return;
             }

@@ -76,13 +76,13 @@ public class BoardManager : MonoBehaviour
         isAttackingTurn = true;
         isGameOver = false;
 
-        if(gameMode.Equals(GameMode.Tablut))
-        {
-            BOARD_SIZE = 9;
-        }
-        else
+        if(gameMode.Equals(GameMode.Hnefatafl))
         {
             BOARD_SIZE = 13;
+        }
+        else if(gameMode.Equals(GameMode.Tablut))
+        {
+            BOARD_SIZE = 9;
         }
 
         SetBoardPlane();
@@ -241,7 +241,7 @@ public class BoardManager : MonoBehaviour
                 {
                     // King has reached the corner
                     // Attacking wins
-                    EndGame(true);
+                    EndGame(Team.Attacking);
                 }
             }
 
@@ -308,18 +308,18 @@ public class BoardManager : MonoBehaviour
         {
             // Surrounded on all sides
             // Defending wins 
-            EndGame(false);
+            EndGame(Team.Defending);
         }
 
         if (attackingCount < 2)
         {
             // Defending wins
-            EndGame(false);
+            EndGame(Team.Defending);
         }
         if (defendingCount < 2)
         {
             // Attacking wins
-            EndGame(true);
+            EndGame(Team.Attacking);
         }
     }
 
@@ -638,7 +638,7 @@ public class BoardManager : MonoBehaviour
         SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 1);
         SpawnPiece(defendingPrefab, BOARD_SIZE - 2, BOARD_SIZE / 2);
 
-        if (BOARD_SIZE >= 11)
+        if (gameMode.Equals(GameMode.Hnefatafl))
         {
             SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 2);
             SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 2);
@@ -666,7 +666,7 @@ public class BoardManager : MonoBehaviour
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 2);
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 1);
 
-        if (BOARD_SIZE >= 11)
+        if (gameMode.Equals(GameMode.Hnefatafl))
         {
             // Add in the corners 
             SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
@@ -754,16 +754,16 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    private void EndGame(bool attackingTeamWon)
+    private void EndGame(Team won)
     {
         isGameOver = true;
 
-        if (attackingTeamWon)
+        if (won.Equals(Team.Attacking))
         {
             OnGameOver.Invoke(Team.Attacking);
             Debug.Log("Attacking team won.");
         }
-        else
+        else if (won.Equals(Team.Defending))
         {
             OnGameOver.Invoke(Team.Defending);
             Debug.Log("Defending team won.");
