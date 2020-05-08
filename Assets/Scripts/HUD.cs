@@ -4,11 +4,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
-using UnityEngine.Events;
 
 public class HUD : MonoBehaviour
 {
     public TMP_Text resetButton, quitButton;
+    public TMP_Text turnText, winText;
 
     public static event Action OnGameQuit;
     public static event Action OnGameReset;
@@ -23,7 +23,7 @@ public class HUD : MonoBehaviour
         OnGameReset += BoardManager.Instance.ResetGame;
         OnGameReset += ResetHud;
         // Add the quit to menu method to the event
-        OnGameQuit += QuitToMenu;
+        OnGameQuit += QuitGame;
 
         // Set up buttons
         SetButton(resetButton, "RESET", Color.white, Color.black, Color.gray, Color.black);
@@ -33,13 +33,13 @@ public class HUD : MonoBehaviour
         quitButton.GetComponent<Button>().onClick.AddListener(() => OnQuitToMenuClicked());
 
         // Hide the win text
-        GameObject.FindGameObjectWithTag("HUDGameOverDisplay").GetComponent<TMP_Text>().enabled = false;
+        winText.gameObject.SetActive(false);
     }
 
     public void ResetHud()
     {
         BoardManager.Team t;
-        if(BoardManager.Instance.isAttackingTurn)
+        if (BoardManager.Instance.isAttackingTurn)
         {
             t = BoardManager.Team.Attacking;
         }
@@ -59,6 +59,13 @@ public class HUD : MonoBehaviour
     {
         OnGameReset.Invoke();
     }
+
+
+    private void QuitGame()
+    {
+        Application.Quit();
+    }
+
 
     private void QuitToMenu()
     {
@@ -90,7 +97,7 @@ public class HUD : MonoBehaviour
         }
     }
 
-    private void SetButton(TMP_Text t, String message, Color colour, Color outline, Color hover, Color pressed)
+    private void SetButton(TMP_Text t, string message, Color colour, Color outline, Color hover, Color pressed)
     {
         SetText(t, message, colour, outline);
 
@@ -119,7 +126,7 @@ public class HUD : MonoBehaviour
 
     private void UpdatePlayerTurnDisplay(BoardManager.Team t)
     {
-        String team;
+        string team;
         Color colour, outline;
         if (t.Equals(BoardManager.Team.Attacking))
         {
@@ -134,29 +141,32 @@ public class HUD : MonoBehaviour
             outline = Color.white;
         }
 
-        SetText(GameObject.FindGameObjectWithTag("HUDTurnDisplay").GetComponent<TMP_Text>(), team + " turn", colour, outline);
+        SetText(turnText, team + " turn", colour, outline);
     }
 
     private void GameOver(BoardManager.Team team)
     {
+        int waitForSeconds = 4;
+
         Debug.Log("OnGameOver called with team " + team);
-        if(team.Equals(BoardManager.Team.Attacking))
+        if (team.Equals(BoardManager.Team.Attacking))
         {
-            StartCoroutine(DisplayWon("Attackers", Color.white, Color.black));
+            StartCoroutine(DisplayWon("Attackers", Color.white, Color.black, waitForSeconds));
         }
         else
         {
-            StartCoroutine(DisplayWon("Defenders", Color.black, Color.white));
+            StartCoroutine(DisplayWon("Defenders", Color.black, Color.white, waitForSeconds));
         }
     }
 
-    private IEnumerator DisplayWon(string team, Color colour, Color outline)
+    private IEnumerator DisplayWon(string team, Color colour, Color outline, int seconds)
     {
-        SetText(GameObject.FindGameObjectWithTag("HUDGameOverDisplay").GetComponent<TMP_Text>(), team + " have won!", colour, outline);
+        SetText(winText, team + " have won!", colour, outline);
+        winText.gameObject.SetActive(true);
 
-        // Wait 2 seconds then disable the text
-        yield return new WaitForSeconds(2);
-        GameObject.FindGameObjectWithTag("HUDGameOverDisplay").GetComponent<TMP_Text>().enabled = false;
+        // Wait seconds seconds then disable the text
+        yield return new WaitForSeconds(seconds);
+        winText.gameObject.SetActive(false);
     }
 
 }
