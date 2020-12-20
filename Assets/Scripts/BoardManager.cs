@@ -76,11 +76,11 @@ public class BoardManager : MonoBehaviour
         isAttackingTurn = true;
         isGameOver = false;
 
-        if(gameMode.Equals(GameMode.Hnefatafl))
+        if (gameMode.Equals(GameMode.Hnefatafl))
         {
             BOARD_SIZE = 13;
         }
-        else if(gameMode.Equals(GameMode.Tablut))
+        else if (gameMode.Equals(GameMode.Tablut))
         {
             BOARD_SIZE = 9;
         }
@@ -249,7 +249,7 @@ public class BoardManager : MonoBehaviour
             // Will be removed soon
             UpdateBoard();
 
-            if(!isGameOver)
+            if (!isGameOver)
             {
                 // Update the players turn
                 UpdatePlayerTurn();
@@ -769,7 +769,7 @@ public class BoardManager : MonoBehaviour
             Debug.Log("Defending team won.");
         }
 
-        
+
     }
 
 
