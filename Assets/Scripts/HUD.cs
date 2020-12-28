@@ -16,7 +16,7 @@ public class HUD : MonoBehaviour
     private void Start()
     {
         // Add the GameOver method to the OnGameOver event call
-        BoardManager.OnGameOver += GameOver;
+        BoardManager.OnGameWon += GameOver;
         // Add the turn indicator
         BoardManager.OnTurnStart += UpdatePlayerTurnDisplay;
         // Add the reset game method to the event
@@ -38,16 +38,7 @@ public class HUD : MonoBehaviour
 
     public void ResetHud()
     {
-        BoardManager.Team t;
-        if (BoardManager.Instance.isAttackingTurn)
-        {
-            t = BoardManager.Team.Attacking;
-        }
-        else
-        {
-            t = BoardManager.Team.Defending;
-        }
-        UpdatePlayerTurnDisplay(t);
+        UpdatePlayerTurnDisplay(BoardManager.Instance.State);
     }
 
     public void OnQuitToMenuClicked()
@@ -85,7 +76,7 @@ public class HUD : MonoBehaviour
         if (SceneManager.GetSceneByName("HUD").isLoaded)
         {
             // Remove all event calls
-            BoardManager.OnGameOver -= GameOver;
+            BoardManager.OnGameWon -= GameOver;
             OnGameReset -= BoardManager.Instance.ResetGame;
             OnGameReset -= ResetHud;
             OnGameQuit -= QuitToMenu;
@@ -124,21 +115,25 @@ public class HUD : MonoBehaviour
     }
 
 
-    private void UpdatePlayerTurnDisplay(BoardManager.Team t)
+    private void UpdatePlayerTurnDisplay(BoardManager.GameState state)
     {
         string team;
         Color colour, outline;
-        if (t.Equals(BoardManager.Team.Attacking))
+        if (state == BoardManager.GameState.AttackingTurn)
         {
             team = "Attackers";
             colour = Color.white;
             outline = Color.black;
         }
-        else
+        else if(state == BoardManager.GameState.AttackingTurn)
         {
             team = "Defenders";
             colour = Color.black;
             outline = Color.white;
+        }
+        else
+        {
+            return;
         }
 
         SetText(turnText, team + " turn", colour, outline);

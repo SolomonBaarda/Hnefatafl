@@ -1,6 +1,13 @@
 ﻿public class MDPEnvironment
 {
     private Tile[,] environment;
+    private Agent attacking, defending;
+
+    public MDPEnvironment(Agent attacking, Agent defending)
+    {
+        this.attacking = attacking;
+        this.defending = defending;
+    }
 
     public MDPEnvironment(Piece[,] board)
     {

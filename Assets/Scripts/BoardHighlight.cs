@@ -6,23 +6,26 @@ public class BoardHighlight : MonoBehaviour
 {
     public static BoardHighlight Instance { set; get; }
 
+    private List<GameObject> highlights = new List<GameObject>();
+
+    public Transform HighlightsParent;
+    public float yOffset = 0.01f;
+    public float transparency = 0.5f;
+
+    [Header("Hover Prefabs")]
     public GameObject possibleMovesPrefab;
     public GameObject selectedTilePrefab;
     public GameObject pieceToRemovePrefab;
 
+    [Header("Piece Preview Prefabs")]
     public GameObject defendingPrefab;
     public GameObject attackingPrefab;
     public GameObject kingPrefab;
 
-    public float yOffset = 0.01f;
-    public float transparency = 0.5f;
 
-    private List<GameObject> highlights;
-
-    private void Start()
+    private void Awake()
     {
         Instance = this;
-        highlights = new List<GameObject>();
     }
 
     private GameObject GetHighlightObject(GameObject highlightPrefab, string tag)
@@ -34,7 +37,7 @@ public class BoardHighlight : MonoBehaviour
         if (go == null)
         {
             go = Instantiate(highlightPrefab);
-            go.transform.SetParent(transform.Find("BoardHighlights"));
+            go.transform.parent = HighlightsParent;
             highlights.Add(go);
         }
 
@@ -57,6 +60,8 @@ public class BoardHighlight : MonoBehaviour
 
                     // Set it active
                     go.SetActive(true);
+
+                    //go.transform.position = BoardManager.Instance.GetTileWorldPosition(x, y) + new Vector3(0, yOffset, 0);
                     go.transform.position = new Vector3(x, yOffset, y);
                 }
             }
