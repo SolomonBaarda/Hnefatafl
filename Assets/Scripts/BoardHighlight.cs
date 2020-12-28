@@ -104,7 +104,7 @@ public class BoardHighlight : MonoBehaviour
                 GameObject hover;
                 if (selected.isAttacking)
                 {
-                    if (selected.isKing)
+                    if(selected.isKing)
                     {
                         hover = GetHighlightObject(kingPrefab, "HighlightKing");
                     }
@@ -122,7 +122,7 @@ public class BoardHighlight : MonoBehaviour
                 hover.transform.position = new Vector3(hoverX + (BoardManager.TILE_SIZE / 2), 0, hoverY + (BoardManager.TILE_SIZE / 2));
 
                 SetTransparent(hover, transparency);
-
+                
                 return;
             }
         }
