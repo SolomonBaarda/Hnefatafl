@@ -14,11 +14,10 @@ public class BoardManager : MonoBehaviour
 
     public const float TILE_SIZE = 1.0f;
     public const float TILE_OFFSET = 0.5f;
-    public int BOARD_SIZE = 11;
+    public int BOARD_SIZE = 13;
 
     public bool isAttackingTurn;
     private bool isGameOver;
-    public GameMode gameMode;
 
     private int selectionX = -1;
     private int selectionY = -1;
@@ -32,12 +31,6 @@ public class BoardManager : MonoBehaviour
 
     public static event Action<Team> OnGameOver;
     public static event Action<Team> OnTurnStart;
-
-    public enum GameMode
-    {
-        Hnefatafl,
-        Tablut,
-    }
 
     public enum Team
     {
@@ -75,15 +68,6 @@ public class BoardManager : MonoBehaviour
     {
         isAttackingTurn = true;
         isGameOver = false;
-
-        if(gameMode.Equals(GameMode.Hnefatafl))
-        {
-            BOARD_SIZE = 13;
-        }
-        else if(gameMode.Equals(GameMode.Tablut))
-        {
-            BOARD_SIZE = 9;
-        }
 
         SetBoardPlane();
         SpawnAllPieces();
@@ -249,7 +233,7 @@ public class BoardManager : MonoBehaviour
             // Will be removed soon
             UpdateBoard();
 
-            if(!isGameOver)
+            if (!isGameOver)
             {
                 // Update the players turn
                 UpdatePlayerTurn();
@@ -638,20 +622,19 @@ public class BoardManager : MonoBehaviour
         SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 1);
         SpawnPiece(defendingPrefab, BOARD_SIZE - 2, BOARD_SIZE / 2);
 
-        if (gameMode.Equals(GameMode.Hnefatafl))
-        {
-            SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 2);
-            SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 2);
 
-            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, 0);
-            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, 0);
+        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 2);
+        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 2);
 
-            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE - 1);
-            SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE - 1);
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, 0);
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, 0);
 
-            SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 2);
-            SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 2);
-        }
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE - 1);
+        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE - 1);
+
+        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 2);
+        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 2);
+
 
         // Spawn the white pieces
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE / 2);
@@ -666,14 +649,13 @@ public class BoardManager : MonoBehaviour
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 2);
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 1);
 
-        if (gameMode.Equals(GameMode.Hnefatafl))
-        {
-            // Add in the corners 
-            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
-            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) - 1);
-            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) + 1);
-            SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) + 1);
-        }
+
+        // Add in the corners 
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) - 1);
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) + 1);
+        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) + 1);
+
 
         // Spawn the king 
         SpawnPiece(kingPrefab, BOARD_SIZE / 2, BOARD_SIZE / 2);
@@ -769,7 +751,7 @@ public class BoardManager : MonoBehaviour
             Debug.Log("Defending team won.");
         }
 
-        
+
     }
 
 
