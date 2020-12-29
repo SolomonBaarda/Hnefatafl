@@ -13,7 +13,6 @@ public class BoardManager : MonoBehaviour
     private Piece selectedPiece;
 
     public const float TILE_SIZE = 1.0f;
-    public const float TILE_OFFSET = 0.5f;
     public int BOARD_SIZE = 13;
 
     public GameState State { get; private set; }
@@ -27,6 +26,8 @@ public class BoardManager : MonoBehaviour
     public static event Action<GameState> OnTurnStart;
 
     public static LayerMask PLANE_MASK => LayerMask.GetMask("BoardPlane");
+    public Transform BoardPlane;
+    public Transform PiecesParent;
 
     public enum Team
     {
@@ -43,40 +44,28 @@ public class BoardManager : MonoBehaviour
 
     private void Start()
     {
-        Instance = this;
-
-        LoadHUD();
         LoadGame();
-
-        LoadBackground();
     }
 
-    public void LoadHUD()
+    public void LoadGame()
     {
+        Instance = this;
+
+        State = GameState.AttackingTurn;
+
+        SetBoardPlane();
+        SpawnAllPieces();
+
         if (!SceneManager.GetSceneByName("HUD").isLoaded)
         {
             SceneManager.LoadSceneAsync("HUD", LoadSceneMode.Additive);
         }
-    }
 
-    public void LoadBackground()
-    {
         if (!SceneManager.GetSceneByName("Background").isLoaded)
         {
             SceneManager.LoadSceneAsync("Background", LoadSceneMode.Additive);
         }
     }
-
-    public void LoadGame()
-    {
-        State = GameState.AttackingTurn;
-
-        SetBoardPlane();
-        SpawnAllPieces();
-    }
-
-
-
 
 
     private void Update()
@@ -85,7 +74,8 @@ public class BoardManager : MonoBehaviour
         {
             if (Controller.Instance.IsHoveringOverBoard)
             {
-                int tileX = Controller.Instance.BoardTileSelection.x, tileY = Controller.Instance.BoardTileSelection.y;
+                Vector2Int tile = GetTile(Controller.Instance.BoardHoverPosition);
+                //Debug.Log("Hovering over tile " + tile.x + " " + tile.y);
 
                 // Left click
                 if (Controller.Instance.LeftClick)
@@ -93,11 +83,11 @@ public class BoardManager : MonoBehaviour
                     bool firstClick = false;
 
                     // Select new piece
-                    if (Board[tileX, tileY] != null)
+                    if (Board[tile.x, tile.y] != null)
                     {
-                        if (selectedPiece == null || selectedPiece != Board[tileX, tileY])
+                        if (selectedPiece == null || selectedPiece != Board[tile.x, tile.y])
                         {
-                            SelectPiece(tileX, tileY);
+                            SelectPiece(tile.x, tile.y);
                             firstClick = true;
                         }
                     }
@@ -108,7 +98,7 @@ public class BoardManager : MonoBehaviour
                         if (selectedPiece != null)
                         {
                             // Move the piece
-                            MovePiece(tileX, tileY);
+                            MovePiece(tile.x, tile.y);
                         }
                     }
                 }
@@ -117,11 +107,11 @@ public class BoardManager : MonoBehaviour
                 // Do the highlights for hovering 
                 if (selectedPiece != null)
                 {
-                    if (allowedMoves[tileX, tileX])
+                    if (allowedMoves[tile.x, tile.y])
                     {
                         // Display the highlights 
-                        BoardHighlight.Instance.HighlightPiecesToRemove(TilesToRemove(selectedPiece, tileX, tileY));
-                        BoardHighlight.Instance.HighlightHoverTile(selectedPiece, tileX, tileY);
+                        BoardHighlight.Instance.HighlightPiecesToRemove(TilesToRemove(selectedPiece, tile.x, tile.y));
+                        BoardHighlight.Instance.HighlightHoverTile(selectedPiece, tile.x, tile.y);
                     }
                     else
                     {
@@ -135,11 +125,11 @@ public class BoardManager : MonoBehaviour
 
     private static bool AtLeastOneValidMove(in bool[,] possibleMoves)
     {
-        for(int y = 0; y < possibleMoves.GetLength(1); y++)
+        for (int y = 0; y < possibleMoves.GetLength(1); y++)
         {
-            for(int x = 0; x < possibleMoves.GetLength(0); x++)
+            for (int x = 0; x < possibleMoves.GetLength(0); x++)
             {
-                if(possibleMoves[x,y])
+                if (possibleMoves[x, y])
                 {
                     return true;
                 }
@@ -162,7 +152,7 @@ public class BoardManager : MonoBehaviour
         bool[,] possibleAllowedMoves = Board[x, y].PossibleMove();
 
         // This piece is a valid selection
-        if(AtLeastOneValidMove(possibleAllowedMoves))
+        if (AtLeastOneValidMove(possibleAllowedMoves))
         {
             // Set selected piece
             selectedPiece = Board[x, y];
@@ -200,8 +190,7 @@ public class BoardManager : MonoBehaviour
 
             // Make the move
             Board[selectedPiece.CurrentX, selectedPiece.CurrentY] = null;
-            selectedPiece.transform.position = GetTileCentre(x, y);
-            selectedPiece.SetPosition(x, y);
+            selectedPiece.SetPosition(x, y, GetTileWorldPositionCentre(x, y));
             Board[x, y] = selectedPiece;
 
             // Check if the king has moved to the corner
@@ -237,7 +226,7 @@ public class BoardManager : MonoBehaviour
         {
             State = GameState.DefendingTurn;
         }
-        else if(State == GameState.DefendingTurn)
+        else if (State == GameState.DefendingTurn)
         {
             State = GameState.AttackingTurn;
         }
@@ -561,21 +550,12 @@ public class BoardManager : MonoBehaviour
 
     private void SetBoardPlane()
     {
-        GameObject plane = GameObject.FindWithTag("BoardPlane");
         // Set the scale to fit the current board size
-        plane.transform.localScale = new Vector3(BOARD_SIZE * 0.1f, 1, BOARD_SIZE * 0.1f);
+        BoardPlane.localScale = new Vector3(BOARD_SIZE * 0.1f, 1, BOARD_SIZE * 0.1f);
         // Move the plane so that it is in the centre of the board
-        plane.transform.position = new Vector3((float)(BOARD_SIZE) / 2, 0, (float)(BOARD_SIZE) / 2);
+        BoardPlane.position = GetBoardCentre();
     }
 
-
-
-    public Vector3 GetBoardPosCentreBottom()
-    {
-        Vector3 centre = GetTileCentre(BOARD_SIZE / 2, BOARD_SIZE / 2);
-
-        return centre;
-    }
 
     private void SpawnAllPieces()
     {
@@ -587,32 +567,24 @@ public class BoardManager : MonoBehaviour
         SpawnPiece(defendingPrefab, 0, BOARD_SIZE / 2);
         SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 1);
         SpawnPiece(defendingPrefab, 1, BOARD_SIZE / 2);
-
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 1, 0);
         SpawnPiece(defendingPrefab, BOARD_SIZE / 2, 0);
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 1, 0);
         SpawnPiece(defendingPrefab, BOARD_SIZE / 2, 1);
-
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 1, BOARD_SIZE - 1);
         SpawnPiece(defendingPrefab, BOARD_SIZE / 2, BOARD_SIZE - 1);
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 1, BOARD_SIZE - 1);
         SpawnPiece(defendingPrefab, BOARD_SIZE / 2, BOARD_SIZE - 2);
-
         SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 1);
         SpawnPiece(defendingPrefab, BOARD_SIZE - 1, BOARD_SIZE / 2);
         SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 1);
         SpawnPiece(defendingPrefab, BOARD_SIZE - 2, BOARD_SIZE / 2);
-
-
         SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 2);
         SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 2);
-
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, 0);
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, 0);
-
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE - 1);
         SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE - 1);
-
         SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 2);
         SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 2);
 
@@ -620,18 +592,12 @@ public class BoardManager : MonoBehaviour
         // Spawn the white pieces
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE / 2);
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, BOARD_SIZE / 2);
-
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 2);
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 1);
-
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE / 2);
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, BOARD_SIZE / 2);
-
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 2);
         SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 1);
-
-
-        // Add in the corners 
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) - 1);
         SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) + 1);
@@ -644,22 +610,30 @@ public class BoardManager : MonoBehaviour
 
     private void SpawnPiece(GameObject o, int x, int y)
     {
-        GameObject go = Instantiate(o, GetTileCentre(x, y), Quaternion.identity) as GameObject;
-        go.transform.SetParent(transform.Find("GamePieces"));
+        GameObject g = Instantiate(o);
+        g.transform.parent = PiecesParent;
 
-        Board[x, y] = go.GetComponent<Piece>();
-        Board[x, y].SetPosition(x, y);
+        Board[x, y] = g.GetComponent<Piece>();
+        Board[x, y].SetPosition(x, y, GetTileWorldPositionCentre(x, y));
 
-        activePieces.Add(go);
+        activePieces.Add(g);
     }
 
-    private Vector3 GetTileCentre(int tileX, int tileY)
+    private Vector3 GetTileWorldPositionCentre(int tileX, int tileY)
     {
-        Vector3 origin = Vector3.zero;
-        origin.x += (TILE_SIZE * tileX) + TILE_OFFSET;
-        origin.z += (TILE_SIZE * tileY) + TILE_OFFSET;
+        return transform.position + new Vector3(TILE_SIZE * tileX + TILE_SIZE/2, 0, TILE_SIZE * tileY + TILE_SIZE / 2);
+    }
 
-        return origin;
+    public Vector3 GetBoardCentre()
+    {
+        Vector3 centre = GetTileWorldPositionCentre(BOARD_SIZE / 2, BOARD_SIZE / 2);
+
+        return centre;
+    }
+
+    public Vector2Int GetTile(Vector3 worldPosition)
+    {
+        return new Vector2Int((int)(worldPosition.x / TILE_SIZE), (int)(worldPosition.z / TILE_SIZE));
     }
 
 
@@ -736,9 +710,6 @@ public class BoardManager : MonoBehaviour
 
 
 
-    public Vector3 GetTileWorldPosition(int x, int y)
-    {
-        return transform.position + new Vector3(x * TILE_SIZE + x * TILE_OFFSET, 0, y * TILE_SIZE + y * TILE_OFFSET);
-    }
+
 
 }

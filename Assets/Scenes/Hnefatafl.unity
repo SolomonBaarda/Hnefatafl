@@ -492,6 +492,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HighlightsParent: {fileID: 5663935059503292208}
+  yOffset: 0.01
+  transparency: 0.5
   possibleMovesPrefab: {fileID: 5462941529662686077, guid: 319489f1b05708f4a881f5826c004bf8,
     type: 3}
   selectedTilePrefab: {fileID: 5462941529662686077, guid: 04588f541dbfeae4eb53b5a31a210490,
@@ -504,8 +506,6 @@ MonoBehaviour:
     type: 3}
   kingPrefab: {fileID: 4817167372568489241, guid: 6ed3bb996c075b64aae06d7ea03c00db,
     type: 3}
-  yOffset: 0.01
-  transparency: 0.5
 --- !u!4 &5663935060242804140
 Transform:
   m_ObjectHideFlags: 0
@@ -536,13 +536,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BOARD_SIZE: 11
-  isAttackingTurn: 1
   defendingPrefab: {fileID: 7636100961166422067, guid: b8b6fb2b052f8ef47bf3c4b672500049,
     type: 3}
   attackingPrefab: {fileID: 1341001715091714310, guid: d6b8baadcff30724dbd616662dd66d27,
     type: 3}
   kingPrefab: {fileID: 7495002529813905058, guid: 7a39efb83939ae14abd2e442bde44833,
     type: 3}
+  BoardPlane: {fileID: 5663935060632295062}
+  PiecesParent: {fileID: 5663935059577289930}
 --- !u!1 &5663935060242804142
 GameObject:
   m_ObjectHideFlags: 0
@@ -590,8 +591,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5663935060632295063}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.5, y: 0, z: 4.5}
-  m_LocalScale: {x: 0.9, y: 1, z: 0.9}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 5663935060242804140}
   m_RootOrder: 0

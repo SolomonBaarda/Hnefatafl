@@ -6,10 +6,8 @@ public class Controller : MonoBehaviour
 
     public bool IsHoveringOverBoard { get; private set; }
 
-    private Vector2 boardSelectionPosition;
-    private Vector2Int boardTileSelection;
-    public Vector2 BoardSelectionPosition => boardSelectionPosition;
-    public Vector2Int BoardTileSelection => boardTileSelection;
+    private Vector3 boardHoverPosition;
+    public Vector3 BoardHoverPosition => boardHoverPosition;
 
 
     public bool LeftClick => Input.GetMouseButtonDown(0);
@@ -32,25 +30,17 @@ public class Controller : MonoBehaviour
                 IsHoveringOverBoard = true;
 
                 // Get the x and y world position of the mouse
-                boardSelectionPosition.x = hit.point.x;
-                boardSelectionPosition.y = hit.point.z;
-                // Get the x and y tile position
-                boardTileSelection.x = (int)boardSelectionPosition.x;
-                boardTileSelection.y = (int)boardSelectionPosition.y;
+                boardHoverPosition = hit.point;
             }
             else
             {
                 IsHoveringOverBoard = false;
 
                 // Reset them
-                boardSelectionPosition.x = -1;
-                boardSelectionPosition.y = -1;
-
-                boardTileSelection.x = -1;
-                boardTileSelection.y = -1;
+                boardHoverPosition.x = -1;
+                boardHoverPosition.y = -1;
             }
         }
     }
-
 
 }

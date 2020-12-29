@@ -65,14 +65,8 @@ public class RotatingCamera : MonoBehaviour
 
     private void SetCameraPosition(Scene scene, LoadSceneMode mode)
     {
-        // Get centre point of board
-        float pos = (int)(BoardManager.Instance.BOARD_SIZE / 2) + BoardManager.TILE_OFFSET;
-
-        // Works but need a better method for height
-        float height = (int)(BoardManager.Instance.BOARD_SIZE / 2) + 3;
-
-        // Set the position
-        transform.localPosition = new Vector3(pos, height, pos);
+        // Set the position to be above the centre of the board
+        transform.position = BoardManager.Instance.GetBoardCentre() + new Vector3(0, (BoardManager.Instance.BOARD_SIZE / 2) + 3, 0);
     }
 
     private void OnDestroy()

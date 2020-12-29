@@ -13,7 +13,7 @@ public class Table : MonoBehaviour
 
     private void Start()
     {
-        transform.position = BoardManager.Instance.GetBoardPosCentreBottom();
+        transform.position = BoardManager.Instance.GetBoardCentre();
 
         CreateBoard();
         CreateTable();

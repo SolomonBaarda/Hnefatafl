@@ -1,21 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    public int CurrentX { set; get; }
-    public int CurrentY { set; get; }
+    public int CurrentX { get; private set; }
+    public int CurrentY { get; private set; }
+
 
     // Value to check the team of the piece
     public bool isAttacking;
     // Value to check 
     public bool isKing = false;
 
-    public void SetPosition(int x, int y)
+    public void SetPosition(int x, int y, Vector3 worldPosition)
     {
-        this.CurrentX = x;
-        this.CurrentY = y;
+        CurrentX = x;
+        CurrentY = y;
+
+        transform.position = worldPosition;
     }
 
     public virtual bool[,] PossibleMove()
