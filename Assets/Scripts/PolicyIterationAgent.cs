@@ -1,9 +1,20 @@
-﻿public class PolicyIterationAgent : Agent
-{
-    //public Dictionary<>
+﻿using UnityEngine;
+using UnityEngine.Events;
 
-    public override (int, int) GetMove(MDPEnvironment e)
+public class PolicyIterationAgent : IAgent
+{
+    public BoardManager.Team Team { get; private set; }
+
+
+    public void Instantiate(BoardManager.Team team)
     {
-        return default;
+        Team = team;
+    }
+
+
+
+    public void GetMove(MDPEnvironment e, UnityAction<Vector2Int, Vector2Int> callback)
+    {
+
     }
 }

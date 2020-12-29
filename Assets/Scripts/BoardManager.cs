@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
+using System.Collections;
 
 public class BoardManager : MonoBehaviour
 {
@@ -22,12 +23,20 @@ public class BoardManager : MonoBehaviour
     public GameObject kingPrefab;
     private Piece king;
 
-    public static event Action<Team> OnGameWon;
-    public static event Action<GameState> OnTurnStart;
+    public static event UnityAction<Team> OnGameWon;
+    public static event UnityAction<GameState> OnTurnStart;
+
+    /// <summary>
+    /// A move was made from the position to the next position
+    /// </summary>
+    private UnityAction<Vector2Int, Vector2Int> OnMoveMade;
 
     public static LayerMask PLANE_MASK => LayerMask.GetMask("BoardPlane");
+    [Header("References")]
     public Transform BoardPlane;
     public Transform PiecesParent;
+
+    private MDPEnvironment Game;
 
     public enum Team
     {
@@ -51,6 +60,15 @@ public class BoardManager : MonoBehaviour
     {
         Instance = this;
 
+        HumanAgent a = gameObject.AddComponent<HumanAgent>();
+        a.Instantiate(Team.Attacking);
+
+        HumanAgent d = gameObject.AddComponent<HumanAgent>();
+        d.Instantiate(Team.Defending);
+
+        Game = new MDPEnvironment(a, d, BOARD_SIZE);
+
+
         State = GameState.AttackingTurn;
 
         SetBoardPlane();
@@ -67,6 +85,29 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+
+    private IEnumerator Play()
+    {
+        while(!Game.IsTerminal)
+        {
+            if(!Game.IsWaitingForMove)
+            {
+                Game.GetNextMove(MakeMove);
+            }
+
+            yield return null;
+        }
+        
+    }
+
+    private void MakeMove(Vector2Int from, Vector2Int to)
+    {
+        // Update the MDP
+        Game.ExecuteMove(from, to);
+
+        // Update the board display
+        // TODO 
+    }
 
     private void Update()
     {
@@ -562,50 +603,26 @@ public class BoardManager : MonoBehaviour
         activePieces = new List<GameObject>();
         Board = new Piece[BOARD_SIZE, BOARD_SIZE];
 
-        // Spawn the black pieces
-        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 1);
-        SpawnPiece(defendingPrefab, 0, BOARD_SIZE / 2);
-        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 1);
-        SpawnPiece(defendingPrefab, 1, BOARD_SIZE / 2);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 1, 0);
-        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, 0);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 1, 0);
-        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, 1);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 1, BOARD_SIZE - 1);
-        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, BOARD_SIZE - 1);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 1, BOARD_SIZE - 1);
-        SpawnPiece(defendingPrefab, BOARD_SIZE / 2, BOARD_SIZE - 2);
-        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 1);
-        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, BOARD_SIZE / 2);
-        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 1);
-        SpawnPiece(defendingPrefab, BOARD_SIZE - 2, BOARD_SIZE / 2);
-        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) - 2);
-        SpawnPiece(defendingPrefab, 0, (BOARD_SIZE / 2) + 2);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, 0);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, 0);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE - 1);
-        SpawnPiece(defendingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE - 1);
-        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) - 2);
-        SpawnPiece(defendingPrefab, BOARD_SIZE - 1, (BOARD_SIZE / 2) + 2);
-
-
-        // Spawn the white pieces
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 2, BOARD_SIZE / 2);
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, BOARD_SIZE / 2);
-        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 2);
-        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) - 1);
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 2, BOARD_SIZE / 2);
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, BOARD_SIZE / 2);
-        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 2);
-        SpawnPiece(attackingPrefab, BOARD_SIZE / 2, (BOARD_SIZE / 2) + 1);
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) - 1);
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) - 1);
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) - 1, (BOARD_SIZE / 2) + 1);
-        SpawnPiece(attackingPrefab, (BOARD_SIZE / 2) + 1, (BOARD_SIZE / 2) + 1);
-
-
-        // Spawn the king 
-        SpawnPiece(kingPrefab, BOARD_SIZE / 2, BOARD_SIZE / 2);
+        // Loop over the environment
+        for(int y = 0; y < Game.Environment.GetLength(1); y++)
+        {
+            for(int x = 0; x < Game.Environment.GetLength(0); x++)
+            {
+                // Instantiate the pieces
+                switch (Game.Environment[x,y])
+                {
+                    case MDPEnvironment.Tile.Defending:
+                        SpawnPiece(defendingPrefab, x, y);
+                        break;
+                    case MDPEnvironment.Tile.Attacking:
+                        SpawnPiece(attackingPrefab, x, y);
+                        break;
+                    case MDPEnvironment.Tile.King:
+                        SpawnPiece(kingPrefab, x, y);
+                        break;
+                }
+            }
+        }
     }
 
     private void SpawnPiece(GameObject o, int x, int y)
