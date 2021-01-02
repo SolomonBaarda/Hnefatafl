@@ -7,11 +7,8 @@ using System.Collections;
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance { private set; get; }
-    private bool[,] allowedMoves;
 
     public Piece[,] Board { private set; get; }
-    private List<GameObject> activePieces;
-    private Piece selectedPiece;
 
     public const float TILE_SIZE = 1.0f;
     public int BOARD_SIZE = 13;
@@ -22,11 +19,11 @@ public class BoardManager : MonoBehaviour
         {
             if (!Game.IsTerminal)
             {
-                if(Game.WhosTurn.Team == Team.Attacking)
+                if (Game.WhosTurn.Team == Team.Attacking)
                 {
                     return GameState.AttackingTurn;
                 }
-                else if(Game.WhosTurn.Team == Team.Defending)
+                else if (Game.WhosTurn.Team == Team.Defending)
                 {
                     return GameState.DefendingTurn;
                 }
@@ -86,7 +83,7 @@ public class BoardManager : MonoBehaviour
         Game = new MDPEnvironment(a, d, BOARD_SIZE);
 
 
-        
+
 
         SetBoardPlane();
         SpawnAllPieces();
@@ -126,28 +123,65 @@ public class BoardManager : MonoBehaviour
         {
             if (!Game.IsWaitingForMove)
             {
-                Debug.Log("Made get move request");
+                //Debug.Log("Made get move request");
                 Game.GetNextMove(MakeMove);
             }
 
             yield return null;
         }
-
     }
 
-    private void MakeMove(Vector2Int from, Vector2Int to)
+    private void MakeMove(Move m)
     {
-        Debug.Log("Recieved move from agent. (" + from.x + "," + from.y + "->" + to.x + "," + to.y + ")");
+        //Debug.Log("Recieved move from agent. (" + m.From.x + "," + m.From.y + "->" + m.To.x + "," + m.To.y + ")");
 
         // Update the MDP
-        Game.ExecuteMove(from, to);
+        List<Vector2Int> piecesToKill = Game.ExecuteMove(m);
 
-        // Update the board display
-        // TODO 
+        // Make the move
+        Piece p = Board[m.From.x, m.From.y];
+        Board[m.From.x, m.From.y] = null;
+        Board[m.To.x, m.To.y] = p;
+        p.SetPosition(m.To.x, m.To.y, GetTileWorldPositionCentre(m.To.x, m.To.y));
 
-        // Destroy and pieces
+        // Kill all pieces affected by this move
+        foreach (Vector2Int v in piecesToKill)
+        {
+            Kill(v.x, v.y);
+        }
 
-        // Check win conditions 
+        Debug.Log("pieces to kill: " + piecesToKill.Count);
+
+
+        /*
+        // Check if the king has moved to the corner
+        if (p.isKing)
+        {
+            if ((m.To.x == 0 || m.To.y == BOARD_SIZE - 1) && (selectedPiece.CurrentY == 0 || selectedPiece.CurrentY == BOARD_SIZE - 1))
+            {
+                // King has reached the corner
+                // Attacking wins
+                EndGame(Team.Attacking);
+            }
+        }
+
+        // Check if a piece needs to be removed
+        // Will be removed soon
+        UpdateBoard();
+
+        if (State != GameState.GameOver)
+        {
+            // Update the players turn
+            OnTurnStart.Invoke(State);
+        }
+
+
+
+        BoardHighlight.Instance.HideHighlights();
+        
+        */
+
+
     }
 
 
@@ -207,22 +241,6 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    */
-
-    private static bool AtLeastOneValidMove(in bool[,] possibleMoves)
-    {
-        for (int y = 0; y < possibleMoves.GetLength(1); y++)
-        {
-            for (int x = 0; x < possibleMoves.GetLength(0); x++)
-            {
-                if (possibleMoves[x, y])
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     private void SelectPiece(int x, int y)
     {
@@ -256,6 +274,7 @@ public class BoardManager : MonoBehaviour
             UnselectPiece();
         }
     }
+    
 
     private void UnselectPiece()
     {
@@ -264,47 +283,8 @@ public class BoardManager : MonoBehaviour
         BoardHighlight.Instance.HideHighlights();
     }
 
-    private void MovePiece(int x, int y)
-    {
-        if (allowedMoves[x, y])
-        {
-            // Kill any pieces
-            foreach (Piece p in TilesToRemove(Board[selectedPiece.CurrentX, selectedPiece.CurrentY], x, y))
-            {
-                Kill(p.CurrentX, p.CurrentY);
-            }
+    */
 
-            // Make the move
-            Board[selectedPiece.CurrentX, selectedPiece.CurrentY] = null;
-            selectedPiece.SetPosition(x, y, GetTileWorldPositionCentre(x, y));
-            Board[x, y] = selectedPiece;
-
-            // Check if the king has moved to the corner
-            if (selectedPiece.isKing)
-            {
-                if ((selectedPiece.CurrentX == 0 || selectedPiece.CurrentX == BOARD_SIZE - 1) && (selectedPiece.CurrentY == 0 || selectedPiece.CurrentY == BOARD_SIZE - 1))
-                {
-                    // King has reached the corner
-                    // Attacking wins
-                    EndGame(Team.Attacking);
-                }
-            }
-
-            // Check if a piece needs to be removed
-            // Will be removed soon
-            UpdateBoard();
-
-            if (State != GameState.GameOver)
-            {
-                // Update the players turn
-                OnTurnStart.Invoke(State);
-            }
-
-        }
-
-        BoardHighlight.Instance.HideHighlights();
-        selectedPiece = null;
-    }
 
 
     private void UpdateBoard()
@@ -450,175 +430,13 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    private List<Piece> TilesToRemove(Piece start, int x, int y)
-    {
-        List<Piece> toRemove = new List<Piece>();
-
-        if (start != null)
-        {
-            if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
-            {
-                // Check all four directions for pieces to remove
-                CheckTilesToRemoveX(start, x, y, +1, ref toRemove);
-                CheckTilesToRemoveX(start, x, y, -1, ref toRemove);
-                CheckTilesToRemoveY(start, x, y, +1, ref toRemove);
-                CheckTilesToRemoveY(start, x, y, -1, ref toRemove);
-
-            }
-        }
-        return toRemove;
-    }
-
-
-
-    private void CheckTilesToRemoveX(Piece start, int x, int y, int direction, ref List<Piece> toRemove)
-    {
-        // Reference to "middle" and "far" pieces
-        Piece m, f;
-
-        // Ensure not on the edge
-        if (x >= 2 && x <= BOARD_SIZE - 3)
-        {
-            // Get reference to the pieces
-            m = Board[x + direction, y];
-            f = Board[x + (2 * direction), y];
-
-            if (m != null && f != null)
-            {
-                if (start.isAttacking == f.isAttacking && start.isAttacking != m.isAttacking)
-                {
-                    if (!m.isKing)
-                    {
-                        // Middle piece needs to be removed
-                        toRemove.Add(m);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // On the left side
-            if (x == 1)
-            {
-                if (direction < 0)
-                {
-                    m = Board[x + direction, y];
-
-                    if (m != null)
-                    {
-                        if (start.isAttacking != m.isAttacking)
-                        {
-                            if (!m.isKing)
-                            {
-                                // Middle piece needs to be removed
-                                toRemove.Add(m);
-                            }
-                        }
-                    }
-                }
-
-            }
-            // On the right side
-            else if (x == BOARD_SIZE - 2)
-            {
-                if (direction > 0)
-                {
-                    m = Board[x + direction, y];
-
-                    if (m != null)
-                    {
-                        if (start.isAttacking != m.isAttacking)
-                        {
-                            if (!m.isKing)
-                            {
-                                // Middle piece needs to be removed
-                                toRemove.Add(m);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-    private void CheckTilesToRemoveY(Piece start, int x, int y, int direction, ref List<Piece> toRemove)
-    {
-        // Reference to "middle" and "far" pieces
-        Piece m, f;
-
-        // Ensure not on the edge
-        if (y >= 2 && y <= BOARD_SIZE - 3)
-        {
-            // Get reference to the pieces
-            m = Board[x, y + direction];
-            f = Board[x, y + (2 * direction)];
-
-            if (m != null && f != null)
-            {
-                if (start.isAttacking == f.isAttacking && start.isAttacking != m.isAttacking)
-                {
-                    if (!m.isKing)
-                    {
-                        // Middle piece needs to be removed
-                        toRemove.Add(m);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // On the top
-            if (y == 1)
-            {
-                if (direction < 0)
-                {
-                    m = Board[x, y + direction];
-
-                    if (m != null)
-                    {
-                        if (start.isAttacking != m.isAttacking)
-                        {
-                            if (!m.isKing)
-                            {
-                                // Middle piece needs to be removed
-                                toRemove.Add(m);
-                            }
-                        }
-                    }
-                }
-
-            }
-            // On the bottom
-            else if (y == BOARD_SIZE - 2)
-            {
-                if (direction > 0)
-                {
-                    m = Board[x, y + direction];
-
-                    if (m != null)
-                    {
-                        if (start.isAttacking != m.isAttacking)
-                        {
-                            if (!m.isKing)
-                            {
-                                // Middle piece needs to be removed
-                                toRemove.Add(m);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    }
 
     private void Kill(int x, int y)
     {
-        Piece a = Board[x, y];
+        Piece p = Board[x, y];
         Board[x, y] = null;
-        activePieces.Remove(a.gameObject);
-        Destroy(a.gameObject);
+
+        Destroy(p.gameObject);
     }
 
     private void SetBoardPlane()
@@ -632,7 +450,6 @@ public class BoardManager : MonoBehaviour
 
     private void SpawnAllPieces()
     {
-        activePieces = new List<GameObject>();
         Board = new Piece[BOARD_SIZE, BOARD_SIZE];
 
         // Loop over the environment
@@ -664,8 +481,6 @@ public class BoardManager : MonoBehaviour
 
         Board[x, y] = g.GetComponent<Piece>();
         Board[x, y].SetPosition(x, y, GetTileWorldPositionCentre(x, y));
-
-        activePieces.Add(g);
     }
 
     private Vector3 GetTileWorldPositionCentre(int tileX, int tileY)
@@ -687,7 +502,6 @@ public class BoardManager : MonoBehaviour
 
     private void EndGame(Team won)
     {
-
         if (won.Equals(Team.Attacking))
         {
             OnGameWon.Invoke(Team.Attacking);
@@ -698,16 +512,20 @@ public class BoardManager : MonoBehaviour
             OnGameWon.Invoke(Team.Defending);
             Debug.Log("Defending team won.");
         }
-
-
     }
 
 
     public void ResetGame()
     {
-        foreach (GameObject go in activePieces)
+        for (int y = 0; y < Board.GetLength(1); y++)
         {
-            Destroy(go);
+            for (int x = 0; x < Board.GetLength(0); x++)
+            {
+                if (Board[x, y] != null)
+                {
+                    Kill(x, y);
+                }
+            }
         }
 
         BoardHighlight.Instance.HideHighlights();
@@ -715,9 +533,6 @@ public class BoardManager : MonoBehaviour
 
         Debug.Log("Game has been reset.");
     }
-
-
-
 
 
 }

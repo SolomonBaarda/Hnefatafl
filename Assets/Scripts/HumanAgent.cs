@@ -12,12 +12,12 @@ public class HumanAgent : MonoBehaviour, IAgent
         Team = team;
     }
 
-    public void GetMove(MDPEnvironment e, UnityAction<Vector2Int, Vector2Int> callback)
+    public void GetMove(MDPEnvironment e, UnityAction<Move> callback)
     {
         StartCoroutine(WaitForMove(e, callback));
     }
 
-    private IEnumerator WaitForMove(MDPEnvironment e, UnityAction<Vector2Int, Vector2Int> callback)
+    private IEnumerator WaitForMove(MDPEnvironment e, UnityAction<Move> callback)
     {
         if (e.IsTerminal)
         {
@@ -56,7 +56,7 @@ public class HumanAgent : MonoBehaviour, IAgent
                                     selected = hoveringTile;
                                     firstClick = true;
 
-                                    Debug.Log("Selected piece at " + selected.x + "," + selected.y + " with " + moves.Count + " moves.");
+                                    //Debug.Log("Selected piece at " + selected.x + "," + selected.y + " with " + moves.Count + " moves.");
                                 }
                             }
                         }
@@ -68,7 +68,7 @@ public class HumanAgent : MonoBehaviour, IAgent
                         if (!selected.Equals(notSet) && e.IsValidMove(selected, hoveringTile))
                         {
                             // Move the piece
-                            callback.Invoke(selected, hoveringTile);
+                            callback.Invoke(new Move(selected, hoveringTile, Team));
                             break;
                         }
 

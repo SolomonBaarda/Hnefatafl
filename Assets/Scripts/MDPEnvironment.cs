@@ -12,6 +12,14 @@ public class MDPEnvironment
     public IAgent Defending { get; private set; }
     public IAgent WhosTurn { get; private set; }
 
+    public enum Tile
+    {
+        Empty,
+        Defending,
+        Attacking,
+        King
+    }
+
     public MDPEnvironment(IAgent attacking, IAgent defending, int boardSize)
     {
         Attacking = attacking;
@@ -86,17 +94,29 @@ public class MDPEnvironment
         Environment[centre, centre] = Tile.King;
     }
 
-    public void GetNextMove(in UnityAction<Vector2Int, Vector2Int> callback)
+    public void GetNextMove(in UnityAction<Move> callback)
     {
         IsWaitingForMove = true;
 
         WhosTurn.GetMove(this, callback);
     }
 
-    public void ExecuteMove(Vector2Int from, Vector2Int to)
+    public List<Vector2Int> ExecuteMove(Move m)
     {
-        // Make the move
+        List<Vector2Int> piecesToKill = GetPiecesToKillWithMove(m);
 
+        // Make the move
+        Tile piece = Environment[m.From.x, m.From.y];
+        Environment[m.To.x, m.To.y] = piece;
+        Environment[m.From.x, m.From.y] = Tile.Empty;
+
+        // Kill all pieces affected by this move
+        foreach(Vector2Int v in piecesToKill)
+        {
+            Environment[v.x, v.y] = Tile.Empty;
+        }
+
+        // Check if the king is pinned
 
 
 
@@ -112,8 +132,9 @@ public class MDPEnvironment
         }
 
         IsWaitingForMove = false;
-    }
 
+        return piecesToKill;
+    }
 
     public bool IsValidMove(Vector2Int from, Vector2Int to)
     {
@@ -126,6 +147,34 @@ public class MDPEnvironment
 
         return false;
     }
+
+    public bool GetTeam(Vector2Int tile, out BoardManager.Team team)
+    {
+        Tile t = Environment[tile.x, tile.y];
+        team = BoardManager.Team.Attacking;
+
+        if (IsOnTeam(t, BoardManager.Team.Attacking))
+        {
+            team = BoardManager.Team.Attacking;
+            return true;
+        }
+        else if (IsOnTeam(t, BoardManager.Team.Defending))
+        {
+            team = BoardManager.Team.Defending;
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool IsOnTeam(Tile tile, BoardManager.Team team)
+    {
+        return (tile == Tile.Defending && team == BoardManager.Team.Defending) ||
+            ((tile == Tile.Attacking || tile == Tile.King) && team == BoardManager.Team.Attacking);
+    }
+
+
+
 
 
     public List<Vector2Int> GetAllPossibleMoves(Vector2Int tile, out bool hasMoves)
@@ -150,6 +199,12 @@ public class MDPEnvironment
                 CheckPossibleMovePieceXAxis(ref moves, tile, team, -1);
                 CheckPossibleMovePieceYAxis(ref moves, tile, team, +1);
                 CheckPossibleMovePieceYAxis(ref moves, tile, team, -1);
+
+                // Ensure that a regular piece cannot move into the corner
+                moves.Remove(new Vector2Int(0, 0));
+                moves.Remove(new Vector2Int(Environment.GetLength(0), 0));
+                moves.Remove(new Vector2Int(0, Environment.GetLength(1)));
+                moves.Remove(new Vector2Int(Environment.GetLength(0), Environment.GetLength(1)));
             }
 
             hasMoves = moves.Count > 0;
@@ -158,8 +213,6 @@ public class MDPEnvironment
 
         return null;
     }
-
-
 
     private void CheckPossibleMovePieceXAxis(ref List<Vector2Int> moves, Vector2Int tile, BoardManager.Team team, int direction)
     {
@@ -219,7 +272,6 @@ public class MDPEnvironment
         }
     }
 
-
     private void CheckPossibleMovePieceYAxis(ref List<Vector2Int> moves, Vector2Int tile, BoardManager.Team team, int direction)
     {
         int y = tile.y;
@@ -278,10 +330,6 @@ public class MDPEnvironment
         }
     }
 
-
-
-
-
     private void CheckDirectionMoveKing(ref List<Vector2Int> moves, int x, int y)
     {
         // Ensure move is within the board
@@ -295,39 +343,72 @@ public class MDPEnvironment
     }
 
 
-    public bool GetTeam(Vector2Int tile, out BoardManager.Team team)
-    {
-        Tile t = Environment[tile.x, tile.y];
-        team = BoardManager.Team.Attacking;
 
-        if (IsOnTeam(t, BoardManager.Team.Attacking))
+    private List<Vector2Int> GetPiecesToKillWithMove(Move m)
+    {
+        List<Vector2Int> toKill = new List<Vector2Int>();
+
+        // Check all four directions for pieces to remove
+        CheckPiecesToKillWithMoveXAxis(ref toKill, m, +1);
+        CheckPiecesToKillWithMoveXAxis(ref toKill, m, -1);
+        CheckPiecesToKillWithMoveYAxis(ref toKill, m, +1);
+        CheckPiecesToKillWithMoveYAxis(ref toKill, m, -1);
+
+        return toKill;
+    }
+
+
+
+
+    // TODO FIX KILL LOGIC - INCONSISTENT
+
+
+
+    private void CheckPiecesToKillWithMoveXAxis(ref List<Vector2Int> toKill, Move m, int direction)
+    {
+        Vector2Int offset = new Vector2Int(direction, 0);
+        Vector2Int tileTrapped = m.To + offset, possibleTeammate = tileTrapped + offset; ;
+
+        // There is a piece that is trapped that is not on this team
+        if (GetTeam(tileTrapped, out BoardManager.Team trappedPieceTeam) && trappedPieceTeam != m.Team)
         {
-            team = BoardManager.Team.Attacking;
-            return true;
+            // We cannot kill the king 
+            if (Environment[tileTrapped.x, tileTrapped.y] != Tile.King)
+            {
+                // We are at the edge of the board or the piece is trapped by our teammate 
+                if (m.To.x == 1 || m.To.x == Environment.GetLength(0) - 1 ||
+                    (possibleTeammate.x >= 0 && possibleTeammate.x < Environment.GetLength(0) && 
+                    GetTeam(possibleTeammate, out BoardManager.Team teammateTeam) && m.Team == teammateTeam))
+                {
+                    toKill.Add(tileTrapped);
+                }
+            }
         }
-        else if (IsOnTeam(t, BoardManager.Team.Defending))
+    }
+
+    private void CheckPiecesToKillWithMoveYAxis(ref List<Vector2Int> toKill, Move m, int direction)
+    {
+        Vector2Int offset = new Vector2Int(0, direction);
+        Vector2Int tileTrapped = m.To + offset, possibleTeammate = tileTrapped + offset; ;
+
+        // There is a piece that is trapped that is not on this team
+        if (GetTeam(tileTrapped, out BoardManager.Team trappedPieceTeam) && trappedPieceTeam != m.Team)
         {
-            team = BoardManager.Team.Defending;
-            return true;
+            // We cannot kill the king 
+            if (Environment[tileTrapped.x, tileTrapped.y] != Tile.King)
+            {
+                // We are at the edge of the board or the piece is trapped by our teammate 
+                if (m.To.y == 1 || m.To.y == Environment.GetLength(1) - 1 ||
+                    (possibleTeammate.y >= 0 && possibleTeammate.y < Environment.GetLength(1) && 
+                    GetTeam(possibleTeammate, out BoardManager.Team teammateTeam) && m.Team == teammateTeam))
+                {
+                    toKill.Add(tileTrapped);
+                }
+            }
         }
-
-        return false;
     }
 
 
-    public static bool IsOnTeam(Tile tile, BoardManager.Team team)
-    {
-        return (tile == Tile.Defending && team == BoardManager.Team.Defending) ||
-            ((tile == Tile.Attacking || tile == Tile.King) && team == BoardManager.Team.Attacking);
-    }
-
-    public enum Tile
-    {
-        Empty,
-        Defending,
-        Attacking,
-        King
-    }
 
 
 

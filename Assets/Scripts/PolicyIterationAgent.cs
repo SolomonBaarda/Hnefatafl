@@ -13,7 +13,7 @@ public class PolicyIterationAgent : IAgent
 
 
 
-    public void GetMove(MDPEnvironment e, UnityAction<Vector2Int, Vector2Int> callback)
+    public void GetMove(MDPEnvironment e, UnityAction<Move> callback)
     {
 
     }
