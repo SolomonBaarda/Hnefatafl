@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -48,13 +49,14 @@ public class HumanAgent : MonoBehaviour, IAgent
                         {
                             if (selected.Equals(notSet) || !selected.Equals(hoveringTile))
                             {
-                                // Also need to check if this piece can make any moves
-                                if(e.HasAtLeastOneMove(hoveringTile))
+                                // Check if this piece can make any moves
+                                List<Vector2Int> moves = e.GetAllPossibleMoves(hoveringTile, out bool hasMoves);
+                                if (hasMoves)
                                 {
                                     selected = hoveringTile;
                                     firstClick = true;
 
-                                    Debug.Log("Selected piece at " + selected.x + "," + selected.y);
+                                    Debug.Log("Selected piece at " + selected.x + "," + selected.y + " with " + moves.Count + " moves.");
                                 }
                             }
                         }
