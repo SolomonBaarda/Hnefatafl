@@ -11,7 +11,6 @@ public class HumanAgent : MonoBehaviour, IAgent
         Team = team;
     }
 
-
     public void GetMove(MDPEnvironment e, UnityAction<Vector2Int, Vector2Int> callback)
     {
         StartCoroutine(WaitForMove(e, callback));
@@ -21,20 +20,19 @@ public class HumanAgent : MonoBehaviour, IAgent
     {
         if (e.IsTerminal)
         {
-            Debug.LogError("Trying to get move from terminal state");
+            Debug.LogError("Trying to get move from terminal state.");
         }
 
         Vector2Int notSet = new Vector2Int(-1, -1);
         Vector2Int selected = notSet;
-        bool moveRecieved = true;
 
         // Wait until the player makes a selection
-        while (!moveRecieved)
+        while (true)
         {
             if (Controller.Instance.IsHoveringOverBoard)
             {
-                Vector2Int tile = BoardManager.Instance.GetTile(Controller.Instance.BoardHoverPosition);
-                //Debug.Log("Hovering over tile " + tile.x + " " + tile.y);
+                Vector2Int hoveringTile = BoardManager.Instance.GetTile(Controller.Instance.BoardHoverPosition);
+                //Debug.Log("Hovering over tile " + hoveringTile.x + " " + hoveringTile.y);
 
                 // Left click
                 if (Controller.Instance.LeftClick)
@@ -42,38 +40,40 @@ public class HumanAgent : MonoBehaviour, IAgent
                     bool firstClick = false;
 
                     // Select new piece
-                    MDPEnvironment.Tile t = e.Environment[tile.x, tile.y];
+                    MDPEnvironment.Tile t = e.Environment[hoveringTile.x, hoveringTile.y];
                     if (t != MDPEnvironment.Tile.Empty)
                     {
                         // Ensure the player is trying to select one of their own pieces
-                        if (((t == MDPEnvironment.Tile.Attacking || t == MDPEnvironment.Tile.King) && Team == BoardManager.Team.Attacking)
-                            || (t == MDPEnvironment.Tile.Defending && Team == BoardManager.Team.Defending))
+                        if (MDPEnvironment.IsOnTeam(t, Team))
                         {
-                            if (selected.Equals(notSet) || !selected.Equals(tile))
+                            if (selected.Equals(notSet) || !selected.Equals(hoveringTile))
                             {
-                                selected = tile;
-                                firstClick = true;
+                                // Also need to check if this piece can make any moves
+                                if(e.HasAtLeastOneMove(hoveringTile))
+                                {
+                                    selected = hoveringTile;
+                                    firstClick = true;
+
+                                    Debug.Log("Selected piece at " + selected.x + "," + selected.y);
+                                }
                             }
                         }
                     }
 
                     if (!firstClick)
                     {
-                        // Move it if there is one selected
-                        if (!selected.Equals(notSet))
+                        // Move it if there is one selected and it is a valid move
+                        if (!selected.Equals(notSet) && e.IsValidMove(selected, hoveringTile))
                         {
                             // Move the piece
-                            callback.Invoke(selected, tile);
-                            moveRecieved = true;
+                            callback.Invoke(selected, hoveringTile);
+                            break;
                         }
+
                     }
                 }
             }
-        }
 
-        // Wait until the next frame 
-        if (!moveRecieved)
-        {
             yield return null;
         }
     }

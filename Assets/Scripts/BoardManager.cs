@@ -16,7 +16,24 @@ public class BoardManager : MonoBehaviour
     public const float TILE_SIZE = 1.0f;
     public int BOARD_SIZE = 13;
 
-    public GameState State { get; private set; }
+    public GameState State
+    {
+        get
+        {
+            if (!Game.IsTerminal)
+            {
+                if(Game.WhosTurn.Team == Team.Attacking)
+                {
+                    return GameState.AttackingTurn;
+                }
+                else if(Game.WhosTurn.Team == Team.Defending)
+                {
+                    return GameState.DefendingTurn;
+                }
+            }
+            return GameState.GameOver;
+        }
+    }
 
     public GameObject defendingPrefab;
     public GameObject attackingPrefab;
@@ -56,7 +73,7 @@ public class BoardManager : MonoBehaviour
         LoadGame();
     }
 
-    public void LoadGame()
+    private void LoadGame()
     {
         Instance = this;
 
@@ -69,11 +86,19 @@ public class BoardManager : MonoBehaviour
         Game = new MDPEnvironment(a, d, BOARD_SIZE);
 
 
-        State = GameState.AttackingTurn;
+        
 
         SetBoardPlane();
         SpawnAllPieces();
 
+
+        StartCoroutine(WaitForLoadScenes());
+    }
+
+
+
+    private IEnumerator WaitForLoadScenes()
+    {
         if (!SceneManager.GetSceneByName("HUD").isLoaded)
         {
             SceneManager.LoadSceneAsync("HUD", LoadSceneMode.Additive);
@@ -83,32 +108,50 @@ public class BoardManager : MonoBehaviour
         {
             SceneManager.LoadSceneAsync("Background", LoadSceneMode.Additive);
         }
+
+        while (!SceneManager.GetSceneByName("HUD").isLoaded && !SceneManager.GetSceneByName("Background").isLoaded)
+        {
+            yield return null;
+        }
+
+        StartCoroutine(Play());
     }
 
 
     private IEnumerator Play()
     {
-        while(!Game.IsTerminal)
+        Debug.Log("Starting the game.");
+
+        while (!Game.IsTerminal)
         {
-            if(!Game.IsWaitingForMove)
+            if (!Game.IsWaitingForMove)
             {
+                Debug.Log("Made get move request");
                 Game.GetNextMove(MakeMove);
             }
 
             yield return null;
         }
-        
+
     }
 
     private void MakeMove(Vector2Int from, Vector2Int to)
     {
+        Debug.Log("Recieved move from agent. (" + from.x + "," + from.y + "->" + to.x + "," + to.y + ")");
+
         // Update the MDP
         Game.ExecuteMove(from, to);
 
         // Update the board display
         // TODO 
+
+        // Destroy and pieces
+
+        // Check win conditions 
     }
 
+
+    /*
     private void Update()
     {
         if (State != GameState.GameOver)
@@ -119,7 +162,7 @@ public class BoardManager : MonoBehaviour
                 //Debug.Log("Hovering over tile " + tile.x + " " + tile.y);
 
                 // Left click
-                if (Controller.Instance.LeftClick)
+                if (Controller.Instance.PressingLeftClick)
                 {
                     bool firstClick = false;
 
@@ -163,6 +206,8 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
+
+    */
 
     private static bool AtLeastOneValidMove(in bool[,] possibleMoves)
     {
@@ -252,7 +297,7 @@ public class BoardManager : MonoBehaviour
             if (State != GameState.GameOver)
             {
                 // Update the players turn
-                UpdatePlayerTurn();
+                OnTurnStart.Invoke(State);
             }
 
         }
@@ -261,19 +306,6 @@ public class BoardManager : MonoBehaviour
         selectedPiece = null;
     }
 
-    private void UpdatePlayerTurn()
-    {
-        if (State == GameState.AttackingTurn)
-        {
-            State = GameState.DefendingTurn;
-        }
-        else if (State == GameState.DefendingTurn)
-        {
-            State = GameState.AttackingTurn;
-        }
-
-        OnTurnStart(State);
-    }
 
     private void UpdateBoard()
     {
@@ -604,12 +636,12 @@ public class BoardManager : MonoBehaviour
         Board = new Piece[BOARD_SIZE, BOARD_SIZE];
 
         // Loop over the environment
-        for(int y = 0; y < Game.Environment.GetLength(1); y++)
+        for (int y = 0; y < Game.Environment.GetLength(1); y++)
         {
-            for(int x = 0; x < Game.Environment.GetLength(0); x++)
+            for (int x = 0; x < Game.Environment.GetLength(0); x++)
             {
                 // Instantiate the pieces
-                switch (Game.Environment[x,y])
+                switch (Game.Environment[x, y])
                 {
                     case MDPEnvironment.Tile.Defending:
                         SpawnPiece(defendingPrefab, x, y);
@@ -638,7 +670,7 @@ public class BoardManager : MonoBehaviour
 
     private Vector3 GetTileWorldPositionCentre(int tileX, int tileY)
     {
-        return transform.position + new Vector3(TILE_SIZE * tileX + TILE_SIZE/2, 0, TILE_SIZE * tileY + TILE_SIZE / 2);
+        return transform.position + new Vector3(TILE_SIZE * tileX + TILE_SIZE / 2, 0, TILE_SIZE * tileY + TILE_SIZE / 2);
     }
 
     public Vector3 GetBoardCentre()
@@ -653,48 +685,8 @@ public class BoardManager : MonoBehaviour
         return new Vector2Int((int)(worldPosition.x / TILE_SIZE), (int)(worldPosition.z / TILE_SIZE));
     }
 
-
-
-
-    /*
-
-    private void DrawBoard()
-    {
-        // Lines for board size
-        Vector3 widthLine = Vector3.right * BOARD_SIZE;
-        Vector3 heightLine = Vector3.forward * BOARD_SIZE;
-
-        // Draw board gizmos
-        for (int i = 0; i <= BOARD_SIZE; i++)
-        {
-            Vector3 start = Vector3.forward * i;
-            Debug.DrawLine(start, start + widthLine);
-
-            for (int j = 0; j <= BOARD_SIZE; j++)
-            {
-                start = Vector3.right * j;
-                Debug.DrawLine(start, start + heightLine);
-            }
-        }
-
-        // Draw selection
-        if (selectionX >= 0 && selectionY >= 0)
-        {
-            Debug.DrawLine(
-                Vector3.forward * selectionY + Vector3.right * selectionX,
-                Vector3.forward * (selectionY + 1) + Vector3.right * (selectionX + 1));
-            Debug.DrawLine(
-                Vector3.forward * (selectionY + 1) + Vector3.right * selectionX,
-                Vector3.forward * selectionY + Vector3.right * (selectionX + 1));
-        }
-    }
-
-    */
-
-
     private void EndGame(Team won)
     {
-        State = GameState.GameOver;
 
         if (won.Equals(Team.Attacking))
         {
@@ -720,7 +712,6 @@ public class BoardManager : MonoBehaviour
 
         BoardHighlight.Instance.HideHighlights();
         SpawnAllPieces();
-        State = GameState.AttackingTurn;
 
         Debug.Log("Game has been reset.");
     }

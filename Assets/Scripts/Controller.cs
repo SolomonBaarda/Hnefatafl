@@ -9,7 +9,6 @@ public class Controller : MonoBehaviour
     private Vector3 boardHoverPosition;
     public Vector3 BoardHoverPosition => boardHoverPosition;
 
-
     public bool LeftClick => Input.GetMouseButtonDown(0);
     public bool RightClick => Input.GetMouseButtonDown(1);
 

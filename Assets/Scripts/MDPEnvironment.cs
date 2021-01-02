@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 public class MDPEnvironment
@@ -15,6 +16,8 @@ public class MDPEnvironment
     {
         Attacking = attacking;
         Defending = defending;
+
+        WhosTurn = Attacking;
 
         CreateEnvironment(boardSize);
     }
@@ -83,49 +86,6 @@ public class MDPEnvironment
         Environment[centre, centre] = Tile.King;
     }
 
-
-
-    /*
-    public MDPEnvironment(Piece[,] board)
-    {
-        Environment = new Tile[board.GetLength(0), board.GetLength(1)];
-
-        // Create the MDP environment from the current game board
-        for (int y = 0; y < board.GetLength(1); y++)
-        {
-            for (int x = 0; x < board.GetLength(0); x++)
-            {
-                Tile tile = Tile.Empty;
-
-                if (board[x, y] != null)
-                {
-                    // Attacking
-                    if (board[x, y].isAttacking)
-                    {
-                        // King
-                        if (board[x, y].isKing)
-                        {
-                            tile = Tile.King;
-                        }
-                        // Normal piece
-                        else
-                        {
-                            tile = Tile.Attacking;
-                        }
-                    }
-                    // Defending
-                    else
-                    {
-                        tile = Tile.Defending;
-                    }
-                }
-
-                Environment[x, y] = tile;
-            }
-        }
-    }
-    */
-
     public void GetNextMove(in UnityAction<Vector2Int, Vector2Int> callback)
     {
         IsWaitingForMove = true;
@@ -135,11 +95,50 @@ public class MDPEnvironment
 
     public void ExecuteMove(Vector2Int from, Vector2Int to)
     {
+        // Make the move
+
+
+
+
+
+        // Change whos turn it is
+        if (WhosTurn.Team == BoardManager.Team.Attacking)
+        {
+            WhosTurn = Defending;
+        }
+        else
+        {
+            WhosTurn = Attacking;
+        }
+
         IsWaitingForMove = false;
-
-
     }
 
+
+    public bool HasAtLeastOneMove(Vector2Int piece)
+    {
+        if (Environment[piece.x, piece.y] != Tile.Empty)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsValidMove(Vector2Int from, Vector2Int to)
+    {
+        if (Environment[to.x, to.y] == Tile.Empty)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool IsOnTeam(Tile tile, BoardManager.Team team)
+    {
+        return (tile == Tile.Defending && team == BoardManager.Team.Defending) ||
+            ((tile == Tile.Attacking || tile == Tile.King) && team == BoardManager.Team.Attacking);
+    }
 
     public enum Tile
     {
@@ -148,6 +147,8 @@ public class MDPEnvironment
         Attacking,
         King
     }
+
+
 
 
 }
