@@ -40,11 +40,6 @@ public class BoardManager : MonoBehaviour
     public static event UnityAction<Team> OnGameWon;
     public static event UnityAction<GameState> OnTurnStart;
 
-    /// <summary>
-    /// A move was made from the position to the next position
-    /// </summary>
-    private UnityAction<Vector2Int, Vector2Int> OnMoveMade;
-
     public static LayerMask PLANE_MASK => LayerMask.GetMask("BoardPlane");
     [Header("References")]
     public Transform BoardPlane;
@@ -67,11 +62,6 @@ public class BoardManager : MonoBehaviour
 
     private void Start()
     {
-        LoadGame();
-    }
-
-    private void LoadGame()
-    {
         Instance = this;
 
         HumanAgent a = gameObject.AddComponent<HumanAgent>();
@@ -81,13 +71,11 @@ public class BoardManager : MonoBehaviour
         d.Instantiate(Team.Defending);
 
         Game = new MDPEnvironment(a, d, BOARD_SIZE);
-
-
+        Board = new Piece[Game.Environment.GetLength(0), Game.Environment.GetLength(1)];
 
 
         SetBoardPlane();
         SpawnAllPieces();
-
 
         StartCoroutine(WaitForLoadScenes());
     }
@@ -150,7 +138,7 @@ public class BoardManager : MonoBehaviour
             Kill(v.x, v.y);
         }
 
-        Debug.Log("pieces to kill: " + piecesToKill.Count);
+        //Debug.Log("pieces to kill: " + piecesToKill.Count);
 
 
         /*
@@ -450,8 +438,6 @@ public class BoardManager : MonoBehaviour
 
     private void SpawnAllPieces()
     {
-        Board = new Piece[BOARD_SIZE, BOARD_SIZE];
-
         // Loop over the environment
         for (int y = 0; y < Game.Environment.GetLength(1); y++)
         {
@@ -476,9 +462,7 @@ public class BoardManager : MonoBehaviour
 
     private void SpawnPiece(GameObject o, int x, int y)
     {
-        GameObject g = Instantiate(o);
-        g.transform.parent = PiecesParent;
-
+        GameObject g = Instantiate(o, PiecesParent);
         Board[x, y] = g.GetComponent<Piece>();
         Board[x, y].SetPosition(x, y, GetTileWorldPositionCentre(x, y));
     }
@@ -517,19 +501,29 @@ public class BoardManager : MonoBehaviour
 
     public void ResetGame()
     {
-        for (int y = 0; y < Board.GetLength(1); y++)
+        foreach(Piece p in PiecesParent.GetComponentsInChildren<Piece>())
         {
-            for (int x = 0; x < Board.GetLength(0); x++)
-            {
-                if (Board[x, y] != null)
-                {
-                    Kill(x, y);
-                }
-            }
+            Destroy(p.gameObject);
         }
 
         BoardHighlight.Instance.HideHighlights();
+
+        if(Game.Attacking is HumanAgent h1) {
+            h1.StopAllCoroutines();
+        }
+        if (Game.Defending is HumanAgent h2)
+        {
+            h2.StopAllCoroutines();
+        }
+
+        Game = new MDPEnvironment(Game.Attacking, Game.Defending, BOARD_SIZE);
+        Board = new Piece[Game.Environment.GetLength(0), Game.Environment.GetLength(1)];
+
         SpawnAllPieces();
+
+        StopAllCoroutines();
+        StartCoroutine(WaitForLoadScenes());
+
 
         Debug.Log("Game has been reset.");
     }

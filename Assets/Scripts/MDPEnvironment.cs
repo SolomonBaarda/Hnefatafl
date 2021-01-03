@@ -360,24 +360,21 @@ public class MDPEnvironment
 
 
 
-    // TODO FIX KILL LOGIC - INCONSISTENT
-
-
-
     private void CheckPiecesToKillWithMoveXAxis(ref List<Vector2Int> toKill, Move m, int direction)
     {
         Vector2Int offset = new Vector2Int(direction, 0);
-        Vector2Int tileTrapped = m.To + offset, possibleTeammate = tileTrapped + offset; ;
+        Vector2Int tileTrapped = m.To + offset, possibleTeammate = tileTrapped + offset;
 
         // There is a piece that is trapped that is not on this team
-        if (GetTeam(tileTrapped, out BoardManager.Team trappedPieceTeam) && trappedPieceTeam != m.Team)
+        if (Utils.IsWithinBounds(tileTrapped, Environment) && 
+            GetTeam(tileTrapped, out BoardManager.Team trappedPieceTeam) && trappedPieceTeam != m.Team)
         {
             // We cannot kill the king 
             if (Environment[tileTrapped.x, tileTrapped.y] != Tile.King)
             {
                 // We are at the edge of the board or the piece is trapped by our teammate 
-                if (m.To.x == 1 || m.To.x == Environment.GetLength(0) - 1 ||
-                    (possibleTeammate.x >= 0 && possibleTeammate.x < Environment.GetLength(0) && 
+                if (m.To.x == 1 || m.To.x == Environment.GetLength(0) - 2 ||
+                    (Utils.IsWithinBounds(possibleTeammate, Environment) && 
                     GetTeam(possibleTeammate, out BoardManager.Team teammateTeam) && m.Team == teammateTeam))
                 {
                     toKill.Add(tileTrapped);
@@ -392,14 +389,15 @@ public class MDPEnvironment
         Vector2Int tileTrapped = m.To + offset, possibleTeammate = tileTrapped + offset; ;
 
         // There is a piece that is trapped that is not on this team
-        if (GetTeam(tileTrapped, out BoardManager.Team trappedPieceTeam) && trappedPieceTeam != m.Team)
+        if (Utils.IsWithinBounds(tileTrapped, Environment) && 
+            GetTeam(tileTrapped, out BoardManager.Team trappedPieceTeam) && trappedPieceTeam != m.Team)
         {
             // We cannot kill the king 
             if (Environment[tileTrapped.x, tileTrapped.y] != Tile.King)
             {
                 // We are at the edge of the board or the piece is trapped by our teammate 
-                if (m.To.y == 1 || m.To.y == Environment.GetLength(1) - 1 ||
-                    (possibleTeammate.y >= 0 && possibleTeammate.y < Environment.GetLength(1) && 
+                if (m.To.y == 1 || m.To.y == Environment.GetLength(1) - 2 ||
+                    (Utils.IsWithinBounds(possibleTeammate, Environment) && 
                     GetTeam(possibleTeammate, out BoardManager.Team teammateTeam) && m.Team == teammateTeam))
                 {
                     toKill.Add(tileTrapped);
