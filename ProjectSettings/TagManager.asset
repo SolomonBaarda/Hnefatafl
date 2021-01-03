@@ -6,12 +6,6 @@ TagManager:
   tags:
   - BoardPlane
   - HoverHighlight
-  - HighlightPieceToRemove
-  - HighlightPossibleMove
-  - HighlightSelectedTile
-  - HighlightKing
-  - HighlightAttacking
-  - HighlightDefending
   - HUDTurnDisplay
   - HUDGameOverDisplay
   layers:
@@ -24,7 +18,7 @@ TagManager:
   - 
   - 
   - BoardPlane
-  - 
+  - Highlight
   - 
   - 
   - 

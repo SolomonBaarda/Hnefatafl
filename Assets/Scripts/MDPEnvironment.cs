@@ -106,6 +106,9 @@ public class MDPEnvironment
         WhosTurn.GetMove(this, callback);
     }
 
+    // SHould fix highlights first - easier to debug invalid moves
+    // BUG where piece can move to spot where it will be killed
+
     public Outcome ExecuteMove(Move m)
     {
         List<Vector2Int> piecesToKill = GetPiecesToKillWithMove(m);

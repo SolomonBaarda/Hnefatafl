@@ -139,7 +139,7 @@ public class BoardManager : MonoBehaviour
         }
 
         // End the game if we need to
-        if(outcome.GameOver)
+        if (outcome.GameOver)
         {
             EndGame(outcome.WinningTeam);
         }
@@ -262,7 +262,7 @@ public class BoardManager : MonoBehaviour
         // Set the scale to fit the current board size
         BoardPlane.localScale = new Vector3(BOARD_SIZE * 0.1f, 1, BOARD_SIZE * 0.1f);
         // Move the plane so that it is in the centre of the board
-        BoardPlane.position = GetBoardCentre();
+        BoardPlane.position = GetBoardCentreWorldPosition();
     }
 
 
@@ -297,16 +297,14 @@ public class BoardManager : MonoBehaviour
         Board[x, y].SetPosition(x, y, GetTileWorldPositionCentre(x, y));
     }
 
-    private Vector3 GetTileWorldPositionCentre(int tileX, int tileY)
+    public Vector3 GetTileWorldPositionCentre(int tileX, int tileY)
     {
         return transform.position + new Vector3(TILE_SIZE * tileX + TILE_SIZE / 2, 0, TILE_SIZE * tileY + TILE_SIZE / 2);
     }
 
-    public Vector3 GetBoardCentre()
+    public Vector3 GetBoardCentreWorldPosition()
     {
-        Vector3 centre = GetTileWorldPositionCentre(BOARD_SIZE / 2, BOARD_SIZE / 2);
-
-        return centre;
+        return GetTileWorldPositionCentre(BOARD_SIZE / 2, BOARD_SIZE / 2);
     }
 
     public Vector2Int GetTile(Vector3 worldPosition)
@@ -333,14 +331,15 @@ public class BoardManager : MonoBehaviour
 
     public void ResetGame()
     {
-        foreach(Piece p in PiecesParent.GetComponentsInChildren<Piece>())
+        foreach (Piece p in PiecesParent.GetComponentsInChildren<Piece>())
         {
             Destroy(p.gameObject);
         }
 
-        BoardHighlight.Instance.HideHighlights();
+        BoardHighlight.Instance.HideAllHighlights();
 
-        if(Game.Attacking is HumanAgent h1) {
+        if (Game.Attacking is HumanAgent h1)
+        {
             h1.StopAllCoroutines();
         }
         if (Game.Defending is HumanAgent h2)
