@@ -124,7 +124,7 @@ public class BoardManager : MonoBehaviour
         //Debug.Log("Recieved move from agent. (" + m.From.x + "," + m.From.y + "->" + m.To.x + "," + m.To.y + ")");
 
         // Update the MDP
-        List<Vector2Int> piecesToKill = Game.ExecuteMove(m);
+        Outcome outcome = Game.ExecuteMove(m);
 
         // Make the move
         Piece p = Board[m.From.x, m.From.y];
@@ -133,43 +133,18 @@ public class BoardManager : MonoBehaviour
         p.SetPosition(m.To.x, m.To.y, GetTileWorldPositionCentre(m.To.x, m.To.y));
 
         // Kill all pieces affected by this move
-        foreach (Vector2Int v in piecesToKill)
+        foreach (Vector2Int v in outcome.PiecesKilled)
         {
             Kill(v.x, v.y);
         }
 
-        //Debug.Log("pieces to kill: " + piecesToKill.Count);
-
-
-        /*
-        // Check if the king has moved to the corner
-        if (p.isKing)
+        // End the game if we need to
+        if(outcome.GameOver)
         {
-            if ((m.To.x == 0 || m.To.y == BOARD_SIZE - 1) && (selectedPiece.CurrentY == 0 || selectedPiece.CurrentY == BOARD_SIZE - 1))
-            {
-                // King has reached the corner
-                // Attacking wins
-                EndGame(Team.Attacking);
-            }
+            EndGame(outcome.WinningTeam);
         }
 
-        // Check if a piece needs to be removed
-        // Will be removed soon
-        UpdateBoard();
-
-        if (State != GameState.GameOver)
-        {
-            // Update the players turn
-            OnTurnStart.Invoke(State);
-        }
-
-
-
-        BoardHighlight.Instance.HideHighlights();
-        
-        */
-
-
+        //BoardHighlight.Instance.HideHighlights();
     }
 
 
@@ -274,151 +249,6 @@ public class BoardManager : MonoBehaviour
     */
 
 
-
-    private void UpdateBoard()
-    {
-        int attackingCount = 0, defendingCount = 0;
-
-        // Loop through the board
-        for (int y = 0; y < BOARD_SIZE; y++)
-        {
-            for (int x = 0; x < BOARD_SIZE; x++)
-            {
-                // Count the number of active tiles
-                if (Board[x, y] != null)
-                {
-                    if (Board[x, y].isAttacking)
-                    {
-                        attackingCount++;
-                    }
-                    else
-                    {
-                        defendingCount++;
-                    }
-                }
-            }
-        }
-
-        if (KingIsTrapped())
-        {
-            // Surrounded on all sides
-            // Defending wins 
-            EndGame(Team.Defending);
-        }
-
-        if (attackingCount < 2)
-        {
-            // Defending wins
-            EndGame(Team.Defending);
-        }
-        if (defendingCount < 2)
-        {
-            // Attacking wins
-            EndGame(Team.Attacking);
-        }
-    }
-
-
-    private bool KingIsTrapped()
-    {
-        // Initialise king
-        if (king == null)
-        {
-            for (int y = 0; y < BOARD_SIZE; y++)
-            {
-                for (int x = 0; x < BOARD_SIZE; x++)
-                {
-                    if (Board[x, y] != null)
-                    {
-                        if (Board[x, y].isKing)
-                        {
-                            king = Board[x, y];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        // Reference to nearby pieces 
-        Piece a, b, c, d;
-
-        // Not at the edge
-        if (king.CurrentX > 0 && king.CurrentX < BOARD_SIZE - 1 && king.CurrentY > 0 && king.CurrentY < BOARD_SIZE - 1)
-        {
-            // Check all four directions
-            a = Board[king.CurrentX - 1, king.CurrentY];
-            b = Board[king.CurrentX + 1, king.CurrentY];
-            c = Board[king.CurrentX, king.CurrentY - 1];
-            d = Board[king.CurrentX, king.CurrentY + 1];
-
-            if (a != null && b != null && c != null && d != null)
-            {
-                if (!a.isAttacking && !b.isAttacking && !c.isAttacking && !d.isAttacking)
-                {
-                    // King is surrounded 
-                    return true;
-                }
-            }
-        }
-        // At the edge
-        else
-        {
-            // X axis
-            if (king.CurrentX == 0 || king.CurrentX == BOARD_SIZE - 1)
-            {
-                if (king.CurrentX == 0)
-                {
-                    a = Board[king.CurrentX + 1, king.CurrentY];
-                }
-                else
-                {
-                    a = Board[king.CurrentX - 1, king.CurrentY];
-
-                }
-                b = Board[king.CurrentX, king.CurrentY - 1];
-                c = Board[king.CurrentX, king.CurrentY + 1];
-
-                if (a != null && b != null && c != null)
-                {
-                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
-                    {
-                        // King is surrounded 
-                        return true;
-                    }
-                }
-
-            }
-            // Y axis
-            if (king.CurrentY == 0 || king.CurrentY == BOARD_SIZE - 1)
-            {
-                if (king.CurrentY == 0)
-                {
-                    a = Board[king.CurrentX, king.CurrentY + 1];
-                }
-                else
-                {
-                    a = Board[king.CurrentX, king.CurrentY - 1];
-                }
-                b = Board[king.CurrentX - 1, king.CurrentY];
-                c = Board[king.CurrentX + 1, king.CurrentY];
-
-                if (a != null && b != null && c != null)
-                {
-                    if (!a.isAttacking && !b.isAttacking && !c.isAttacking)
-                    {
-                        // King is surrounded 
-                        return true;
-                    }
-                }
-            }
-        }
-
-        // If we get here then the king is not trapped 
-        return false;
-    }
-
-
-
     private void Kill(int x, int y)
     {
         Piece p = Board[x, y];
@@ -496,6 +326,8 @@ public class BoardManager : MonoBehaviour
             OnGameWon.Invoke(Team.Defending);
             Debug.Log("Defending team won.");
         }
+
+        StopAllCoroutines();
     }
 
 
