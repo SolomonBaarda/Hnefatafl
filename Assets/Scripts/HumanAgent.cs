@@ -36,6 +36,7 @@ public class HumanAgent : MonoBehaviour, IAgent
                 Vector2Int newHoveringTile = BoardManager.Instance.GetTile(Controller.Instance.BoardHoverPosition);
                 bool newHoverTile = !hoveringTile.Equals(newHoveringTile);
                 hoveringTile = newHoveringTile;
+                bool selectedSetThisFrame = false;
 
                 //Debug.Log("Hovering over tile " + hoveringTile.x + " " + hoveringTile.y);
 
@@ -55,29 +56,36 @@ public class HumanAgent : MonoBehaviour, IAgent
                             {
                                 selected = hoveringTile;
 
-
                                 // Enable the highlights for this selected tile
                                 BoardHighlight.Instance.HideAllHighlights();
                                 BoardHighlight.Instance.HighlightAllowedMoves(moves);
                                 BoardHighlight.Instance.HighlightSelectedTile(selected);
 
                                 //Debug.Log("Selected piece at " + selected.x + "," + selected.y + " with " + moves.Count + " moves.");
-                                // Continue so that we wait for the next mouse press before trying to move again
-                                continue;
+                                selectedSetThisFrame = true;
                             }
-
                         }
                     }
 
-
+                    // If we get here then it is the second click
                     // Move it if there is one selected and it is a valid move
-                    if (!selected.Equals(notSet) && e.IsValidMove(selected, hoveringTile))
+                    if (!selectedSetThisFrame && !selected.Equals(notSet))
                     {
-                        // Make the move
-                        callback.Invoke(new Move(selected, hoveringTile, Team));
+                        // This is a valid move
+                        if (e.IsValidMove(selected, hoveringTile))
+                        {
+                            // Make the move
+                            callback.Invoke(new Move(selected, hoveringTile, Team));
 
-                        BoardHighlight.Instance.HideAllHighlights();
-                        break;
+                            BoardHighlight.Instance.HideAllHighlights();
+                            break;
+                        }
+                        // If we get here then the player has clicked on an invalid piece
+                        else
+                        {
+                            selected = notSet;
+                            BoardHighlight.Instance.HideAllHighlights();
+                        }
                     }
                 }
 
@@ -88,8 +96,12 @@ public class HumanAgent : MonoBehaviour, IAgent
 
                     if (!selected.Equals(notSet) && e.IsValidMove(selected, hoveringTile))
                     {
+                        // Do the highlights
+                        // Move piece preview
                         MDPEnvironment.Tile selectedTileType = e.Environment[selected.x, selected.y];
                         BoardHighlight.Instance.HighlightHoverForTile(hoveringTile, selectedTileType);
+                        // Kills preview
+                        BoardHighlight.Instance.HighlightPiecesToKill(e.GetPiecesToKillWithMove(new Move(selected, hoveringTile, Team)));
                     }
                 }
             }

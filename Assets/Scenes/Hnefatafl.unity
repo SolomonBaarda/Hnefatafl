@@ -494,17 +494,17 @@ MonoBehaviour:
   HighlightsParent: {fileID: 5663935059503292208}
   yOffset: 0.01
   transparency: 0.5
-  possibleMovesPrefab: {fileID: 5462941529662686077, guid: 319489f1b05708f4a881f5826c004bf8,
+  PrefabPossibleMoves: {fileID: 5462941529662686077, guid: 319489f1b05708f4a881f5826c004bf8,
     type: 3}
-  selectedTilePrefab: {fileID: 5462941529662686077, guid: 04588f541dbfeae4eb53b5a31a210490,
+  PrefabSelectedTile: {fileID: 5462941529662686077, guid: 04588f541dbfeae4eb53b5a31a210490,
     type: 3}
-  pieceToRemovePrefab: {fileID: 5462941529662686077, guid: e08e7e366079b2c41821eb1d1aa10f36,
+  PrefabTilesToKill: {fileID: 5462941529662686077, guid: e08e7e366079b2c41821eb1d1aa10f36,
     type: 3}
-  defendingPrefab: {fileID: 3725232881663881239, guid: 1563cfba402c32a48945ab2199b7f858,
+  PrefabKingPreview: {fileID: 7495002529813905058, guid: a9686dfe2e20a6c4cb7a603bde4aae88,
     type: 3}
-  attackingPrefab: {fileID: 4745625508159190940, guid: 1740dffbaf981d64295d9b9bb7b4b0b2,
+  PrefabAttackingPreview: {fileID: 1341001715091714310, guid: 6d46f712c0f96b342a4dfd84f9d4371c,
     type: 3}
-  kingPrefab: {fileID: 4817167372568489241, guid: 6ed3bb996c075b64aae06d7ea03c00db,
+  PrefabDefendingPreview: {fileID: 7636100961166422067, guid: e1cf8cf6ef9977046a9d03bb9900dc59,
     type: 3}
 --- !u!4 &5663935060242804140
 Transform:

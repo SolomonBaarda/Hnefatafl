@@ -259,9 +259,9 @@ public class MDPEnvironment
 
                 // Ensure that a regular piece cannot move into the corner
                 moves.Remove(new Vector2Int(0, 0));
-                moves.Remove(new Vector2Int(Environment.GetLength(0), 0));
-                moves.Remove(new Vector2Int(0, Environment.GetLength(1)));
-                moves.Remove(new Vector2Int(Environment.GetLength(0), Environment.GetLength(1)));
+                moves.Remove(new Vector2Int(Environment.GetLength(0) - 1, 0));
+                moves.Remove(new Vector2Int(0, Environment.GetLength(1) - 1));
+                moves.Remove(new Vector2Int(Environment.GetLength(0) - 1, Environment.GetLength(1) - 1));
             }
 
             hasMoves = moves.Count > 0;
@@ -399,7 +399,7 @@ public class MDPEnvironment
         }
     }
 
-    private List<Vector2Int> GetPiecesToKillWithMove(Move m)
+    public List<Vector2Int> GetPiecesToKillWithMove(Move m)
     {
         List<Vector2Int> toKill = new List<Vector2Int>();
 
