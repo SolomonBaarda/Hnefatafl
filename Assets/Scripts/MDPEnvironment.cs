@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 ﻿using System.Collections;
+=======
+﻿using System;
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -201,10 +205,18 @@ public class MDPEnvironment
             return BoardManager.Team.Attacking;
         }
     }
-
     public bool GetTeam(Vector2Int tile, out BoardManager.Team team)
     {
+<<<<<<< Updated upstream
         Tile t = GameBoard[tile.x, tile.y];
+=======
+        return GetTeam(Environment, tile, out team);
+    }
+
+    public static bool GetTeam(Tile[,] environment, Vector2Int tile, out BoardManager.Team team)
+    {
+        Tile t = environment[tile.x, tile.y];
+>>>>>>> Stashed changes
         team = BoardManager.Team.Attacking;
 
         if (IsOnTeam(t, BoardManager.Team.Attacking))
@@ -221,12 +233,44 @@ public class MDPEnvironment
         return false;
     }
 
+
     public static bool IsOnTeam(Tile tile, BoardManager.Team team)
     {
         return (tile == Tile.Defending && team == BoardManager.Team.Defending) ||
             ((tile == Tile.Attacking || tile == Tile.King) && team == BoardManager.Team.Attacking);
     }
 
+
+    public static List<Vector2Int> GetAllPossibleMoves(Tile[,] environment, Vector2Int tile, out bool hasMoves)
+    {
+        hasMoves = false;
+
+        if (GetTeam(environment, tile, out BoardManager.Team team))
+        {
+            Tile t = environment[tile.x, tile.y];
+            List<Vector2Int> moves = new List<Vector2Int>();
+
+            if (t == Tile.King)
+            {
+                CheckPossibleMoveMoveKing(ref moves, tile + new Vector2Int(1, 0));
+                CheckPossibleMoveMoveKing(ref moves, tile + new Vector2Int(-1, 0));
+                CheckPossibleMoveMoveKing(ref moves, tile + new Vector2Int(0, 1));
+                CheckPossibleMoveMoveKing(ref moves, tile + new Vector2Int(0, -1));
+            }
+            else
+            {
+                CheckPossibleMove(ref moves, tile, team, new Vector2Int(1, 0));
+                CheckPossibleMove(ref moves, tile, team, new Vector2Int(-1, 0));
+                CheckPossibleMove(ref moves, tile, team, new Vector2Int(0, 1));
+                CheckPossibleMove(ref moves, tile, team, new Vector2Int(0, -1));
+            }
+
+            hasMoves = moves.Count > 0;
+            return moves;
+        }
+
+        return null;
+    }
 
     public List<Vector2Int> GetAllPossibleMoves(Vector2Int tile, out bool hasMoves)
     {
@@ -261,7 +305,7 @@ public class MDPEnvironment
 
 
 
-    private bool CanMoveToPosition(Vector2Int pos, Vector2Int neighbour1, Vector2Int neighbour2, BoardManager.Team team)
+    private static bool CanMoveToPosition(Vector2Int pos, Vector2Int neighbour1, Vector2Int neighbour2, BoardManager.Team team)
     {
         BoardManager.Team opposite = GetOppositeTeam(team);
 
@@ -270,8 +314,12 @@ public class MDPEnvironment
             (!IsWallOrPieceFromteam(neighbour1, opposite) || !IsWallOrPieceFromteam(neighbour2, opposite));
     }
 
-
     private void CheckPossibleMove(ref List<Vector2Int> moves, Vector2Int startingTile, BoardManager.Team team, Vector2Int direction)
+    {
+        CheckPossibleMove(ref moves, Environment, startingTile, team, direction);
+    }
+
+        private static void CheckPossibleMove(ref List<Vector2Int> moves, Tile[,] environment, Vector2Int startingTile, BoardManager.Team team, Vector2Int direction)
     {
         Vector2Int position = startingTile;
         while (true)
@@ -279,7 +327,11 @@ public class MDPEnvironment
             position += direction;
 
             // Ensure that the new position is within the bounds of the array and is empty
+<<<<<<< Updated upstream
             if (!Utils.IsWithinBounds(position, GameBoard) || GameBoard[position.x, position.y] != Tile.Empty)
+=======
+            if (!Utils.IsWithinBounds(position, environment) || environment[position.x, position.y] != Tile.Empty)
+>>>>>>> Stashed changes
             {
                 break;
             }
@@ -295,8 +347,17 @@ public class MDPEnvironment
 
     private void CheckPossibleMoveMoveKing(ref List<Vector2Int> moves, Vector2Int pos)
     {
+        CheckPossibleMoveMoveKing(ref moves, Environment, pos);
+    }
+
+    private static void CheckPossibleMoveMoveKing(ref List<Vector2Int> moves, Tile[,] environment, Vector2Int pos)
+    {
         // Ensure move is within the board
+<<<<<<< Updated upstream
         if (Utils.IsWithinBounds(pos, GameBoard) && GameBoard[pos.x, pos.y] == Tile.Empty)
+=======
+        if (Utils.IsWithinBounds(pos, environment) && environment[pos.x, pos.y] == Tile.Empty)
+>>>>>>> Stashed changes
         {
             moves.Add(pos);
         }
@@ -334,6 +395,7 @@ public class MDPEnvironment
 
 
 
+<<<<<<< Updated upstream
 
 
     public enum GameState
@@ -354,3 +416,57 @@ public class MDPEnvironment
     }
 
 }
+=======
+    private static HashSet<Tile[,]> ConstructAllPossibleStates(MDPEnvironment e, int movesForThisAgentDepth)
+    {
+        HashSet<Tile[,]> states = new HashSet<Tile[,]>();
+
+
+
+    }
+
+    private static void AddAllPossibleOutcomes(Tile[,] environment, BoardManager.Team turn, Vector2Int from, List<Vector2Int> destinations, ref HashSet<Tile[,]> outcomes)
+    {
+        foreach (Vector2Int move in e.GetAllPossibleMoves())
+        {
+
+        }
+
+    }
+
+
+
+
+
+
+
+
+    public static long Hash(Tile[,] environment, BoardManager.Team turn)
+    {
+        // For board of 13*13 we need 170 digits of base 4 numbers
+        // this would allow for 169 tile positions and 1 turn value
+
+        string base4 = "";
+
+        // The first length * height digits (in base 4) will be the values of the game tiles
+        for (int y = 0; y < environment.GetLength(1); y++)
+        {
+            for (int x = 0; x < environment.GetLength(0); x++)
+            {
+                // Use the enum tile value for each tile
+                string.Concat(base4, environment[x, y]);
+            }
+        }
+
+        // Now encode whos turn it is
+        string.Concat(base4, turn);
+
+        // We use base 4 as there are 4 possibilities for each tile type
+        return Utils.Base4ToLong(base4);
+    }
+
+
+
+
+}
+>>>>>>> Stashed changes
