@@ -38,7 +38,7 @@ public class HUD : MonoBehaviour
 
     public void ResetHud()
     {
-        UpdatePlayerTurnDisplay(BoardManager.Instance.State);
+        UpdatePlayerTurnDisplay(BoardManager.Instance.);
     }
 
     public void OnQuitToMenuClicked()

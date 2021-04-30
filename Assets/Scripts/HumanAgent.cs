@@ -12,12 +12,12 @@ public class HumanAgent : MonoBehaviour, IAgent
         Team = team;
     }
 
-    public void GetMove(MDPEnvironment e, UnityAction<Move> callback)
+    public void GetMove(MDP e, UnityAction<Move> callback)
     {
         StartCoroutine(WaitForMove(e, callback));
     }
 
-    private IEnumerator WaitForMove(MDPEnvironment e, UnityAction<Move> callback)
+    private IEnumerator WaitForMove(MDP e, UnityAction<Move> callback)
     {
         if (e.IsTerminal)
         {
@@ -43,10 +43,10 @@ public class HumanAgent : MonoBehaviour, IAgent
                 // Select a piece
                 if (Controller.Instance.LeftClick)
                 {
-                    MDPEnvironment.Tile t = e.Environment[hoveringTile.x, hoveringTile.y];
+                    MDP.Tile t = e.State[hoveringTile.x, hoveringTile.y];
 
                     // Ensure the player is trying to select one of their own pieces
-                    if (t != MDPEnvironment.Tile.Empty && MDPEnvironment.IsOnTeam(t, Team))
+                    if (t != MDP.Tile.Empty && MDP.IsOnTeam(t, Team))
                     {
                         if (selected.Equals(notSet) || !selected.Equals(hoveringTile))
                         {
@@ -98,7 +98,7 @@ public class HumanAgent : MonoBehaviour, IAgent
                     {
                         // Do the highlights
                         // Move piece preview
-                        MDPEnvironment.Tile selectedTileType = e.Environment[selected.x, selected.y];
+                        MDP.Tile selectedTileType = e.State[selected.x, selected.y];
                         BoardHighlight.Instance.HighlightHoverForTile(hoveringTile, selectedTileType);
                         // Kills preview
                         BoardHighlight.Instance.HighlightPiecesToKill(e.GetPiecesToKillWithMove(new Move(selected, hoveringTile, Team)));

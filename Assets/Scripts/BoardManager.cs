@@ -11,26 +11,6 @@ public class BoardManager : MonoBehaviour
     public Piece[,] Board { private set; get; }
 
     public const float TILE_SIZE = 1.0f;
-    public int BOARD_SIZE = 13;
-
-    public GameState State
-    {
-        get
-        {
-            if (!Game.IsTerminal)
-            {
-                if (Game.WhosTurn.Team == Team.Attacking)
-                {
-                    return GameState.AttackingTurn;
-                }
-                else if (Game.WhosTurn.Team == Team.Defending)
-                {
-                    return GameState.DefendingTurn;
-                }
-            }
-            return GameState.GameOver;
-        }
-    }
 
     public GameObject defendingPrefab;
     public GameObject attackingPrefab;
@@ -45,7 +25,16 @@ public class BoardManager : MonoBehaviour
     public Transform BoardPlane;
     public Transform PiecesParent;
 
-    private MDPEnvironment Game;
+    private MDP Game;
+    public GameState State
+    {
+        get
+        {
+            switch (Game.State.)
+            {
+                default:
+            }
+        } }
 
     public enum Team
     {
@@ -70,8 +59,8 @@ public class BoardManager : MonoBehaviour
         HumanAgent d = gameObject.AddComponent<HumanAgent>();
         d.Instantiate(Team.Defending);
 
-        Game = new MDPEnvironment(a, d, BOARD_SIZE);
-        Board = new Piece[Game.Environment.GetLength(0), Game.Environment.GetLength(1)];
+        Game = new MDP(a, d);
+        Board = new Piece[Game.State.BoardSize, Game.State.BoardSize];
 
 
         SetBoardPlane();
@@ -107,7 +96,7 @@ public class BoardManager : MonoBehaviour
     {
         Debug.Log("Starting the game.");
 
-        while (!Game.IsTerminal)
+        while (!Game.IsGameOver)
         {
             if (!Game.IsWaitingForMove)
             {
@@ -260,7 +249,7 @@ public class BoardManager : MonoBehaviour
     private void SetBoardPlane()
     {
         // Set the scale to fit the current board size
-        BoardPlane.localScale = new Vector3(BOARD_SIZE * 0.1f, 1, BOARD_SIZE * 0.1f);
+        BoardPlane.localScale = new Vector3(Game.State.BoardSize * 0.1f, 1, Game.State.BoardSize * 0.1f);
         // Move the plane so that it is in the centre of the board
         BoardPlane.position = GetBoardCentreWorldPosition();
     }
@@ -269,12 +258,12 @@ public class BoardManager : MonoBehaviour
     private void SpawnAllPieces()
     {
         // Loop over the environment
-        for (int y = 0; y < Game.Environment.GetLength(1); y++)
+        for (int y = 0; y < Game.State.BoardSize; y++)
         {
-            for (int x = 0; x < Game.Environment.GetLength(0); x++)
+            for (int x = 0; x < Game.State.BoardSize; x++)
             {
                 // Instantiate the pieces
-                switch (Game.Environment[x, y])
+                switch (Game.State.GameBoard[x, y])
                 {
                     case MDPEnvironment.Tile.Defending:
                         SpawnPiece(defendingPrefab, x, y);
@@ -304,7 +293,7 @@ public class BoardManager : MonoBehaviour
 
     public Vector3 GetBoardCentreWorldPosition()
     {
-        return GetTileWorldPositionCentre(BOARD_SIZE / 2, BOARD_SIZE / 2);
+        return GetTileWorldPositionCentre(Game.State.BoardSize / 2, Game.State.BoardSize / 2);
     }
 
     public Vector2Int GetTile(Vector3 worldPosition)
@@ -347,8 +336,8 @@ public class BoardManager : MonoBehaviour
             h2.StopAllCoroutines();
         }
 
-        Game = new MDPEnvironment(Game.Attacking, Game.Defending, BOARD_SIZE);
-        Board = new Piece[Game.Environment.GetLength(0), Game.Environment.GetLength(1)];
+        Game = new MDP(Game.Attacking, Game.Defending);
+        Board = new Piece[Game.State.BoardSize, Game.State.BoardSize];
 
         SpawnAllPieces();
 

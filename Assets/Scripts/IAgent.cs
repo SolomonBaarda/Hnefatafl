@@ -7,5 +7,5 @@ public interface IAgent
 
     void Instantiate(BoardManager.Team team);
 
-    void GetMove(MDPEnvironment e, UnityAction<Move> callback);
+    void GetMove(MDP e, UnityAction<Move> callback);
 }
